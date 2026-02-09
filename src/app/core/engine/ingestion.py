@@ -9,11 +9,11 @@ from app.utils.logger import logger
 
 class IngestionService:
     def __init__(self):
+        # 初始化向量库管理器 (单例模式)
         self.store_manager = VectorStoreManager()
         self.embed_model = ModelFactory.get_embedding()
 
         # [核心组件] 层级切片器
-        # 自动建立 Parent(1024) -> Child(256) 关系
         self.node_parser = HierarchicalNodeParser.from_defaults(
             chunk_sizes=[settings.chunk_size_parent, settings.chunk_size_child]
         )
@@ -28,7 +28,8 @@ class IngestionService:
         documents = SimpleDirectoryReader(
             input_dir=input_dir,
             recursive=True,
-            required_exts=[".pdf", ".md", ".txt"]
+            required_exts=[".pdf", ".md", ".txt"],
+            encoding="utf-8"
         ).load_data()
 
         if not documents:
@@ -39,7 +40,6 @@ class IngestionService:
         nodes = self.node_parser.get_nodes_from_documents(documents)
 
         # 3. 提取叶子节点 (最小的子块)
-        # 我们只对叶子节点计算 Embedding，以节省 Token 并提高检索精度
         leaf_nodes = get_leaf_nodes(nodes)
 
         logger.info(f"解析完成: 总节点 {len(nodes)} | 叶子节点 {len(leaf_nodes)}")
@@ -47,17 +47,17 @@ class IngestionService:
         # 4. 获取存储上下文
         storage_context = self.store_manager.get_storage_context()
 
-        # 5. 将所有节点存入 DocStore (重要！否则无法回溯父块)
+        # 5. 将所有节点存入 DocStore (内存中暂存)
         storage_context.docstore.add_documents(nodes)
 
-        # 6. 构建索引 (计算 Embedding 并存入 Qdrant)
-        # 注意：这里会自动使用 storage_context 中的 vector_store
+        # 6. 构建索引 (这一步会自动将向量写入 Qdrant 数据库)
         VectorStoreIndex(
             leaf_nodes,
             storage_context=storage_context,
             embed_model=self.embed_model
         )
 
-        # 7. 持久化保存
-        self.store_manager.persist()
+        # 7. 持久化保存 (❌ 删除这一行，Qdrant 会自动保存)
+        # self.store_manager.persist()
+
         logger.success("文档处理与索引构建完成！")

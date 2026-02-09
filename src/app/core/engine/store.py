@@ -1,63 +1,63 @@
 import os
-from typing import Optional
-
 from llama_index.vector_stores.qdrant import QdrantVectorStore
-from llama_index.core.storage.docstore import SimpleDocumentStore
 from llama_index.core import StorageContext
-from qdrant_client import QdrantClient
+from qdrant_client import QdrantClient, models
 
 from app.settings import settings
 
 
 class VectorStoreManager:
-    """
-    存储管理器：管理数据库连接与持久化
-    """
+    # 单例模式
+    _instance = None
+    _client = None
+    COLLECTION_NAME = "my_rag_collection"
 
-    def __init__(
-            self,
-            qdrant_path: Optional[str] = None,
-            collection_name: Optional[str] = None,
-            storage_dir: Optional[str] = None
-    ):
-        # 支持依赖注入，方便测试
-        self.qdrant_path = qdrant_path or settings.qdrant_path
-        self.collection_name = collection_name or settings.qdrant_collection
-        self.storage_dir = storage_dir or settings.storage_dir
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(VectorStoreManager, cls).__new__(cls)
+        return cls._instance
 
-        # 1. 初始化 Qdrant 客户端
-        if self.qdrant_path == ":memory:":
-            self.client = QdrantClient(location=":memory:")
-        else:
-            self.client = QdrantClient(path=self.qdrant_path)
+    def __init__(self):
+        if VectorStoreManager._client is not None:
+            self.client = VectorStoreManager._client
+            return
 
-        # 2. 初始化 Vector Store
-        self.vector_store = QdrantVectorStore(
+        if not os.path.exists(settings.qdrant_path):
+            os.makedirs(settings.qdrant_path)
+
+        print(f"🔌 [System] 正在连接 Qdrant 向量库: {settings.qdrant_path}")
+        self.client = QdrantClient(path=settings.qdrant_path)
+        VectorStoreManager._client = self.client
+
+    def get_storage_context(self):
+        """获取 LlamaIndex 存储上下文"""
+        vector_store = QdrantVectorStore(
             client=self.client,
-            collection_name=self.collection_name
+            collection_name=self.COLLECTION_NAME
         )
+        return StorageContext.from_defaults(vector_store=vector_store)
 
-        # 3. 初始化 DocStore (用于自动合并检索)
-        self.doc_store = self._init_doc_store()
+    def delete_file(self, file_name: str) -> bool:
+        """
+        [物理删除] 从 Qdrant 中删除指定文件的所有向量
+        """
+        try:
+            # 定义过滤器：尝试匹配所有可能的字段
+            file_filter = models.Filter(
+                should=[
+                    models.FieldCondition(key="file_name", match=models.MatchValue(value=file_name)),
+                    models.FieldCondition(key="metadata.file_name", match=models.MatchValue(value=file_name)),
+                    # 兼容可能存在的 full path 记录
+                    models.FieldCondition(key="file_path", match=models.MatchValue(value=file_name)),
+                ]
+            )
 
-    def _init_doc_store(self) -> SimpleDocumentStore:
-        """尝试从本地加载 DocStore，失败则新建"""
-        if self.storage_dir == ":memory:":
-            return SimpleDocumentStore()
-
-        json_path = os.path.join(self.storage_dir, "docstore.json")
-        if os.path.exists(json_path):
-            return SimpleDocumentStore.from_persist_dir(persist_dir=self.storage_dir)
-        return SimpleDocumentStore()
-
-    def get_storage_context(self) -> StorageContext:
-        """返回 LlamaIndex 标准存储上下文"""
-        return StorageContext.from_defaults(
-            vector_store=self.vector_store,
-            docstore=self.doc_store
-        )
-
-    def persist(self):
-        """手动保存 DocStore 到磁盘"""
-        if self.storage_dir != ":memory:":
-            self.doc_store.persist(persist_dir=self.storage_dir)
+            self.client.delete(
+                collection_name=self.COLLECTION_NAME,
+                points_selector=models.FilterSelector(filter=file_filter)
+            )
+            print(f"🗑️ [Qdrant] 已清理向量数据: {file_name}")
+            return True
+        except Exception as e:
+            print(f"❌ [Qdrant] 删除失败: {e}")
+            return False
