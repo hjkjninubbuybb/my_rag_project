@@ -9,24 +9,32 @@ packages = [{include = "app", from = "src"}]
 [tool.poetry.dependencies]
 python = ">=3.11,<3.13"
 
-# --- LlamaIndex 核心 ---
-llama-index-core = "^0.11.0"
+# --- LlamaIndex 核心 (关键升级) ---
+# 从 0.11.0 升级到 0.13.0+ 以适配最新的 Qdrant 插件
+llama-index-core = "^0.13.0"
+
+# --- LlamaIndex 组件 (配套升级) ---
+# 核心升级后，建议将相关组件也放宽版本限制，让 Poetry 自动寻找匹配版本
+llama-index-llms-dashscope = ">=0.2.0"
+llama-index-embeddings-dashscope = ">=0.2.0"
+llama-index-postprocessor-dashscope-rerank = ">=0.2.0"
+
+# OpenAI 组件 (保持兼容)
+llama-index-embeddings-openai = ">=0.2.0"
+
+# 👇【关键修改】这里是解决报错的核心
+# 使用 0.9.1 或更高版本，它修复了 QdrantClient 的调用问题
+llama-index-vector-stores-qdrant = "^0.9.1"
+
+# 文件读取
+llama-index-readers-file = ">=0.2.0"
 
 # --- 核心框架 ---
 langgraph = "^0.2.0"
 pydantic-settings = "^2.0.0"
 
-# --- LlamaIndex 组件 ---
-llama-index-llms-dashscope = ">=0.1.0"
-llama-index-embeddings-dashscope = ">=0.1.0"
-# 👇【关键修改】升级到 0.2.0 以适配 Core 0.11.x
-llama-index-embeddings-openai = "^0.2.0"
-llama-index-vector-stores-qdrant = ">=0.1.0"
-llama-index-readers-file = ">=0.1.0"
-llama-index-postprocessor-dashscope-rerank = "^0.2.0"
-
-# --- 文档解析支持 ---
-pypdf = "^4.0.0"
+# [修改后] 改为 6.0.0 以上，以适配最新的 LlamaIndex Reader
+pypdf = "^6.0.0"
 
 # --- 本地稀疏向量生成 ---
 fastembed = "^0.4.0"
@@ -40,7 +48,8 @@ langchain-openai = "^0.1.0"
 # --- 基础设施与 UI ---
 gradio = "^5.0.0"
 python-dotenv = "^1.0.0"
-qdrant-client = "^1.7.0"
+# Qdrant 客户端保持最新
+qdrant-client = "^1.16.2"
 loguru = "^0.7.0"
 
 [tool.poetry.group.dev.dependencies]

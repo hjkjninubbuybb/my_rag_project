@@ -1,3 +1,17 @@
+"""
+[Architecture Role: Memory (记忆)]
+此模块实现了 "三权分立" 架构中的 【记忆层】。
+
+核心职责:
+1. [Vector Storage] 封装 Qdrant 向量数据库的所有底层操作。
+2. [Context Provider] 为 Ingestion 和 Retrieval 提供 StorageContext。
+3. [Physical Deletion] 负责从磁盘上物理清除向量数据。
+
+架构边界:
+- 它 **不负责** 维护 "已索引文件列表" (那是 Ledger/SQLite 的职责)。
+- 它 **不感知** 文件的上传或暂存状态 (那是 Staging 的职责)。
+"""
+
 import os
 from llama_index.vector_stores.qdrant import QdrantVectorStore
 from llama_index.core import StorageContext
@@ -7,6 +21,10 @@ from app.settings import settings
 
 
 class VectorStoreManager:
+    """
+    Qdrant 向量库管理器
+    Pattern: Singleton (单例模式) - 确保全应用只维护一个数据库连接。
+    """
     # 单例模式
     _instance = None
     _client = None
@@ -18,6 +36,10 @@ class VectorStoreManager:
         return cls._instance
 
     def __init__(self):
+        """
+        初始化连接
+        Side Effect: 如果本地路径不存在，会自动创建目录。
+        """
         if VectorStoreManager._client is not None:
             self.client = VectorStoreManager._client
             return
@@ -30,7 +52,12 @@ class VectorStoreManager:
         VectorStoreManager._client = self.client
 
     def get_storage_context(self):
-        """获取 LlamaIndex 存储上下文"""
+        """
+        [Context Provider] 获取 LlamaIndex 存储上下文
+        Usage:
+        1. IngestionService 用它来写入向量。
+        2. RetrievalService 用它来读取向量。
+        """
         vector_store = QdrantVectorStore(
             client=self.client,
             collection_name=self.COLLECTION_NAME
@@ -39,10 +66,20 @@ class VectorStoreManager:
 
     def delete_file(self, file_name: str) -> bool:
         """
-        [物理删除] 从 Qdrant 中删除指定文件的所有向量
+        [Physical Deletion] 物理删除向量
+
+        Architecture Note:
+        这是 "双重删除" 策略的一部分。当 Server 调用此方法时，
+        仅仅是删除了 Qdrant 里的向量数据 (Memory)，
+        Server 必须同时调用 DatabaseManager 删除元数据 (Ledger)，
+        才能完成一次完整的 "文件删除" 操作。
+
+        Implementation:
+        使用 Qdrant 的 Filter Delete 机制，匹配 Payload 中的文件名。
         """
         try:
-            # 定义过滤器：尝试匹配所有可能的字段
+            # 定义过滤器：尝试匹配所有可能的字段 (容错处理)
+            # 因为不同版本的 LlamaIndex 可能会把文件名存在不同的 key 里
             file_filter = models.Filter(
                 should=[
                     models.FieldCondition(key="file_name", match=models.MatchValue(value=file_name)),

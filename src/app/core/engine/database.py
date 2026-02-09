@@ -1,3 +1,18 @@
+"""
+[Architecture Role: Ledger (账本)]
+此模块实现了 "三权分立" 架构中的 【账本层】。
+
+核心职责:
+1. [Source of Truth] 作为 UI "已索引文件列表" 的唯一数据源。
+2. [Metadata Only] 仅记录文件的元数据 (文件名、索引时间)，绝不存储向量或文件内容。
+3. [High Performance] 提供毫秒级的文件名查询能力 (相比遍历 Qdrant 向量库，查 SQLite 极快)。
+
+架构交互:
+- [Read] Server.py 读取此模块来刷新 UI 列表。
+- [Write] Server.py 在 Ingestion 成功后写入此模块。
+- [Delete] Server.py 在用户点击删除时，同步删除此处的记录。
+"""
+
 import sqlite3
 import os
 from datetime import datetime
@@ -29,7 +44,12 @@ class DatabaseManager:
             conn.commit()
 
     def add_file(self, filename: str):
-        """[记账] 添加一个已索引的文件"""
+        """
+        [记账操作] 添加一个已索引的文件记录
+
+        Trigger: 当 IngestionService 成功将文档存入 Qdrant 后，由 Server.py 调用。
+        Note: 使用 INSERT OR IGNORE 防止重复记录同一文件名。
+        """
         try:
             with self._get_connection() as conn:
                 cursor = conn.cursor()
@@ -43,7 +63,13 @@ class DatabaseManager:
             print(f"❌ [SQLite] 添加失败: {e}")
 
     def remove_file(self, filename: str):
-        """[销账] 删除文件记录"""
+        """
+        [销账操作] 删除文件记录
+
+        Trigger: 当用户在 UI 点击 "删除选中" 时调用。
+        Side Effect: 仅删除元数据。
+        Critical: 必须与 StoreManager.delete_file() 配合使用，才能实现彻底删除。
+        """
         try:
             with self._get_connection() as conn:
                 cursor = conn.cursor()
@@ -57,7 +83,12 @@ class DatabaseManager:
             print(f"❌ [SQLite] 删除失败: {e}")
 
     def get_all_files(self) -> list[str]:
-        """[查账] 获取所有已索引的文件名"""
+        """
+        [查账操作] 获取所有已索引的文件名
+
+        Usage: 供 UI (Gradio) 刷新列表使用。
+        Performance: 极快 (直接查 SQL)，避免了遍历向量库的性能瓶颈。
+        """
         try:
             with self._get_connection() as conn:
                 cursor = conn.cursor()
