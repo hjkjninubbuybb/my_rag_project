@@ -1,0 +1,43 @@
+$projectRoot = "my_rag_project"
+$gitignorePath = Join-Path $projectRoot ".gitignore"
+
+$content = @"
+# --- 隐私与密钥 (绝对不能上传!) ---
+.env
+.env.*
+*.key
+*.pem
+
+# --- Python 编译文件 ---
+__pycache__/
+*.py[cod]
+*$py.class
+
+# --- 虚拟环境 ---
+.venv/
+venv/
+ENV/
+
+# --- IDE 配置 ---
+.idea/
+.vscode/
+*.swp
+
+# --- 本地数据库与存储 (不要上传这些大文件) ---
+qdrant_db/
+storage_store/
+data/uploads/
+*.sqlite
+*.db
+
+# --- 构建与分发 ---
+dist/
+build/
+*.egg-info/
+
+# --- 日志 ---
+*.log
+"@
+
+[System.IO.File]::WriteAllText($gitignorePath, $content.Trim(), [System.Text.Encoding]::UTF8)
+Write-Host "✅ .gitignore 配置完成！" -ForegroundColor Green

@@ -1,0 +1,41 @@
+[tool.poetry]
+name = "my-rag-project"
+version = "0.1.0"
+description = "Enterprise RAG with LlamaIndex and LangGraph"
+authors = ["Your Name <your@email.com>"]
+
+# 👇【关键修改】告诉 Poetry 源代码在 src 目录下，解决找不到 app 模块的问题
+packages = [{include = "app", from = "src"}]
+
+[tool.poetry.dependencies]
+# 适配 Python 3.13
+python = ">=3.13,<3.14"
+
+# --- 核心框架 ---
+llama-index-core = "^0.10.0"
+langgraph = "^0.0.26"
+pydantic-settings = "^2.0.0"
+
+# --- LlamaIndex 组件 (数据层) ---
+llama-index-llms-dashscope = "^0.1.0"          # 阿里云百炼 Qwen LLM
+llama-index-embeddings-dashscope = "^0.1.0"    # 阿里云百炼 Embedding
+llama-index-vector-stores-qdrant = "^0.1.0"    # Qdrant 向量库
+llama-index-readers-file = "^0.1.0"            # 文件读取支持
+
+# --- LangChain 组件 (控制层兼容) ---
+langchain-openai = "^0.0.5"                    # 用于 LangGraph 调用兼容 OpenAI 协议的接口
+langchain-core = "^0.1.0"
+
+# --- 基础设施与 UI ---
+python-dotenv = "^1.0.0"                       # 环境变量管理
+qdrant-client = "^1.7.0"                       # 向量库客户端
+loguru = "^0.7.0"                              # 日志工具
+gradio = "^4.0.0"                              # Web UI 界面
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0.0"
+pytest-asyncio = "^0.23.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
