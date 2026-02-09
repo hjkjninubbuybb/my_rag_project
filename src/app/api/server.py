@@ -7,7 +7,7 @@ from langchain_core.messages import HumanMessage
 
 from app.core.engine.ingestion import IngestionService
 from app.core.engine.store import VectorStoreManager
-from app.core.engine.database import DatabaseManager  # 👈 新增：引入账本管理器
+from app.core.engine.database import DatabaseManager
 from app.core.graph.workflow import create_graph
 
 # 定义上传目录
@@ -16,11 +16,9 @@ UPLOAD_DIR = Path("data/uploads/temp_batch")
 
 def create_ui():
     """构建 Gradio 界面"""
-    # 初始化三大金刚
     ingestion = IngestionService()
-    store_manager = VectorStoreManager()  # 管向量
-    db_manager = DatabaseManager()  # 管账本
-
+    store_manager = VectorStoreManager()
+    db_manager = DatabaseManager()
     graph = create_graph()
 
     # --- 辅助函数 ---
@@ -34,9 +32,12 @@ def create_ui():
 
     def list_db_files():
         """列出【数据库】已索引文件 (读 SQLite)"""
-        # 👇 关键修改：直接查 SQLite，速度极快，绝对准确
         files = db_manager.get_all_files()
-        return files
+
+        # 👇【核心修复】
+        # 必须返回组件对象并指定 choices，才能更新“选项列表”
+        # 如果只返回 files 列表，Gradio 会以为你在设置“默认选中项”
+        return gr.CheckboxGroup(choices=files, value=[], label=f"已索引文档列表 ({len(files)})")
 
     # --- 核心逻辑 ---
 
@@ -75,10 +76,10 @@ def create_ui():
         files_to_process = [f.name for f in UPLOAD_DIR.iterdir() if f.is_file()]
 
         try:
-            # 2. 调用 LlamaIndex 进行处理 (耗时操作)
+            # 2. 调用 LlamaIndex 进行处理
             await ingestion.process_directory(str(UPLOAD_DIR))
 
-            # 3. 处理成功！开始记账 (SQLite)
+            # 3. 处理成功！开始记账
             for filename in files_to_process:
                 db_manager.add_file(filename)
 
@@ -98,15 +99,13 @@ def create_ui():
         return None, "🗑️ 暂存区已清空。"
 
     def delete_from_db(selected_files):
-        """从数据库删除 (销账 + 删向量)"""
+        """从数据库删除"""
         if not selected_files:
             return "⚠️ 请先在下方列表中勾选要删除的文件。", list_db_files()
 
         deleted_count = 0
         for file_name in selected_files:
-            # 1. 删向量 (Qdrant)
             store_manager.delete_file(file_name)
-            # 2. 销账 (SQLite)
             db_manager.remove_file(file_name)
             deleted_count += 1
 
@@ -130,9 +129,10 @@ def create_ui():
                         clear_staging_btn = gr.Button("🗑️ 清空暂存", variant="stop")
                     ingest_btn = gr.Button("🚀 开始处理 (入库)", variant="primary")
 
-                # 右侧：已入库 (从 SQLite 读取)
+                # 右侧：已入库
                 with gr.Column(scale=1):
                     gr.Markdown("### 2️⃣ 已入库 (数据库)")
+                    # 初始 choices 为空
                     db_file_list = gr.CheckboxGroup(label="已索引文档列表", choices=[], interactive=True)
                     with gr.Row():
                         refresh_db_btn = gr.Button("🔄 刷新列表")
@@ -142,6 +142,7 @@ def create_ui():
 
             # 事件绑定
             demo.load(fn=list_staging_files, outputs=staging_file_output)
+            # 这里的 list_db_files 返回了 gr.CheckboxGroup(...)，这会自动更新 db_file_list 的 choices
             demo.load(fn=list_db_files, outputs=db_file_list)
 
             upload_btn.click(fn=handle_upload, inputs=staging_file_output, outputs=[staging_file_output, log_output])
