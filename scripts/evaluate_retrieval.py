@@ -27,7 +27,7 @@ from app.core.engine.factory import ModelFactory
 from app.settings import settings
 from llama_index.core.schema import QueryBundle
 
-# 强制修正 Qdrant 路径
+# 强制修正 Qdrant 路径 (如果你修改了 .env 里的路径，请注释掉下面 3 行)
 qdrant_abs_path = project_root / "qdrant_db"
 if hasattr(settings, "qdrant_path"):
     settings.qdrant_path = str(qdrant_abs_path)
@@ -141,7 +141,12 @@ class ExperimentRunner:
             # 判分
             relevance_scores = []
             hit_rank = -1
-            top1_text = final_nodes[0].text if final_nodes else "无结果"
+
+            # 👇 [修改] 增加判空检查，防止 list index out of range
+            if final_nodes and len(final_nodes) > 0:
+                top1_text = final_nodes[0].text
+            else:
+                top1_text = "无结果"
 
             for rank, node in enumerate(final_nodes):
                 is_hit = self.judge.is_hit(ground_truth, node.text)
@@ -223,13 +228,14 @@ class ExperimentRunner:
         all_details = []
 
         for config in experiments_to_run:
-            try:
-                metrics, details = self.run_experiment(config, df)
-                all_metrics.append(metrics)
-                all_details.extend(details)
-                print(f"   👉 结果: Hit={metrics['Hit_Rate']:.2%} | MRR={metrics['MRR']:.4f}")
-            except Exception as e:
-                print(f"❌ 实验 {config['name']} 失败: {e}")
+            # 👇 [修改] 暂时注释掉 try-except 以便显示详细报错
+            # try:
+            metrics, details = self.run_experiment(config, df)
+            all_metrics.append(metrics)
+            all_details.extend(details)
+            print(f"   👉 结果: Hit={metrics['Hit_Rate']:.2%} | MRR={metrics['MRR']:.4f}")
+            # except Exception as e:
+            #     print(f"❌ 实验 {config['name']} 失败: {e}")
 
         # 保存结果 (无论是否 limit，都保存！)
         if all_metrics:
