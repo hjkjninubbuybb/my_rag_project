@@ -9,6 +9,7 @@
 """
 
 from typing import Dict, List, Tuple, Callable, Any
+import traceback  # 👈 新增导入
 
 # 👇 核心组件
 from FlagEmbedding import BGEM3FlagModel
@@ -141,6 +142,16 @@ class ModelFactory:
             查询编码器：将单条查询转换为 (indices, values)
             """
             try:
+                # 👇 [新增] 强力清洗与调试打印
+                if not isinstance(query, str):
+                    query = str(query)
+                query = query.strip()
+
+                # 如果是空字符串，直接返回空向量（必须是列表的列表格式）
+                if not query:
+                    print(f"⚠️ [BGE-M3 Warning] 跳过空查询")
+                    return [[]], [[]]
+
                 output = model.encode([query], return_dense=False, return_sparse=True, return_colbert_vecs=False)
                 item = output['lexical_weights'][0]
 
@@ -151,9 +162,14 @@ class ModelFactory:
                     values.append(float(v))
 
                 # Qdrant Query 接口也要求解包为 2 个值
-                return indices, values
+                # 👇【核心修改】这里必须包一层 []，变成 List[List]
+                # 即使是单条查询，Qdrant 插件可能也会尝试按 batch 索引访问 [0]
+                return [indices], [values]
+
             except Exception as e:
-                print(f"❌ [BGE-M3 Error] Query 编码出错: {e}")
-                return [], []
+                # 👇 [新增] 打印堆栈以便调试
+                traceback.print_exc()
+                print(f"❌ [BGE-M3 Error] Query 编码出错: {e} | Query内容: '{query}'")
+                return [[]], [[]]
 
         return sparse_doc_fn, sparse_query_fn
