@@ -4,7 +4,7 @@ import time
 import numpy as np
 import pandas as pd
 import argparse
-from datetime import datetime  # 👈 [新增] 用于生成时间戳
+from datetime import datetime
 from pathlib import Path
 from tqdm import tqdm
 from typing import List, Dict, Tuple
@@ -27,7 +27,7 @@ from app.core.engine.factory import ModelFactory
 from app.settings import settings
 from llama_index.core.schema import QueryBundle
 
-# 强制修正 Qdrant 路径 (如果你修改了 .env 里的路径，请注释掉下面 3 行)
+# 强制修正 Qdrant 路径
 qdrant_abs_path = project_root / "qdrant_db"
 if hasattr(settings, "qdrant_path"):
     settings.qdrant_path = str(qdrant_abs_path)
@@ -80,8 +80,11 @@ class SemanticJudge:
         def clean(t):
             return str(t).replace(" ", "").replace("\n", "").lower()
 
+        # 1. 字面匹配
         if clean(ground_truth) in clean(retrieved_text):
             return True
+
+        # 2. 语义匹配
         try:
             vec_gt = self.get_embedding(ground_truth)
             vec_ret = self.get_embedding(retrieved_text)
@@ -100,16 +103,12 @@ class ExperimentRunner:
 
         self.configs = [
             {"name": "A", "desc": "纯向量 (Baseline)", "hybrid": False, "merge": False, "rerank": False},
-            {"name": "B", "desc": "混合检索 (Hybrid)", "hybrid": True, "merge": False, "rerank": False},
-            {"name": "C", "desc": "自动合并 (Auto-Merge)", "hybrid": True, "merge": True, "rerank": False},
-            {"name": "D", "desc": "完全体 (Full)", "hybrid": True, "merge": True, "rerank": True},
+            {"name": "B", "desc": "无混合检索 (No Hybrid)", "hybrid": False, "merge": True, "rerank": True},
+            {"name": "C", "desc": "无重排序 (No Rerank)", "hybrid": True, "merge": True, "rerank": False},
+            {"name": "D", "desc": "完全体 (Full Pipeline)", "hybrid": True, "merge": True, "rerank": True},
         ]
 
     def run_experiment(self, config: Dict, dataset: pd.DataFrame) -> Tuple[Dict, List[Dict]]:
-        """
-        运行单组实验
-        返回: (统计指标metrics, 详细记录details)
-        """
         exp_tag = f"Exp_{config['name']}"
         print(f"\n🧪 启动实验 [{config['name']}]: {config['desc']}")
 
@@ -118,7 +117,7 @@ class ExperimentRunner:
             enable_merge=config["merge"]
         )
 
-        detailed_results = []  # 记录每一题的详细情况
+        detailed_results = []
         start_time = time.time()
         top_k = settings.rerank_top_k
 
@@ -127,52 +126,70 @@ class ExperimentRunner:
             ground_truth = str(row['Ground Truth Text'])
             category = str(row.get('Category', 'Unknown'))
 
-            # 检索
-            nodes = retriever.retrieve(query)
+            try:
+                # 1. 检索
+                nodes = retriever.retrieve(query)
 
-            # 重排
-            if config["rerank"] and self.reranker:
-                query_bundle = QueryBundle(query_str=query)
-                ranked_nodes = self.reranker.postprocess_nodes(nodes, query_bundle)
-                final_nodes = ranked_nodes[:top_k]
-            else:
-                final_nodes = nodes[:top_k]
+                # 2. 重排序
+                if config["rerank"] and self.reranker:
+                    query_bundle = QueryBundle(query_str=query)
+                    ranked_nodes = self.reranker.postprocess_nodes(nodes, query_bundle)
+                    final_nodes = ranked_nodes[:top_k]
+                else:
+                    final_nodes = nodes[:top_k]
 
-            # 判分
-            relevance_scores = []
-            hit_rank = -1
+                # 3. 判分
+                relevance_scores = []
+                hit_rank = -1
 
-            # 👇 [修改] 增加判空检查，防止 list index out of range
-            if final_nodes and len(final_nodes) > 0:
-                top1_text = final_nodes[0].text
-            else:
-                top1_text = "无结果"
+                # --- 👇 修改开始：收集 Top 5 结果 ---
+                retrieved_snippets = []
+                if final_nodes:
+                    for i, node in enumerate(final_nodes[:5]):  # 确保只取前5个
+                        # 清洗文本，去除换行符，截取前80个字
+                        clean_text = node.text[:80].replace("\n", " ").replace("\r", " ")
+                        retrieved_snippets.append(f"[{i + 1}] {clean_text}...")
 
-            for rank, node in enumerate(final_nodes):
-                is_hit = self.judge.is_hit(ground_truth, node.text)
-                relevance_scores.append(1 if is_hit else 0)
-                if is_hit and hit_rank == -1:
-                    hit_rank = rank + 1
+                    # 用换行符拼接，方便在 CSV/Excel 单元格内查看 (需开启自动换行)
+                    top5_text_combined = "\n".join(retrieved_snippets)
+                else:
+                    top5_text_combined = "无结果"
+                # --- 👆 修改结束 ---
 
-            if len(relevance_scores) < top_k:
-                relevance_scores += [0] * (top_k - len(relevance_scores))
+                for rank, node in enumerate(final_nodes):
+                    is_hit = self.judge.is_hit(ground_truth, node.text)
+                    relevance_scores.append(1 if is_hit else 0)
+                    if is_hit and hit_rank == -1:
+                        hit_rank = rank + 1
 
-            # 计算单题指标
-            is_hit_int = 1 if hit_rank > 0 else 0
-            mrr = 1.0 / hit_rank if hit_rank > 0 else 0.0
-            ndcg = calculate_ndcg(top_k, relevance_scores)
+                if len(relevance_scores) < top_k:
+                    relevance_scores += [0] * (top_k - len(relevance_scores))
 
-            # 记录详情 (用于写 Case Study)
-            detailed_results.append({
-                "Experiment": config["name"],
-                "Category": category,
-                "Question": query,
-                "Is_Hit": is_hit_int,
-                "MRR": mrr,
-                "NDCG": ndcg,
-                "Ground_Truth": ground_truth,
-                "Top1_Retrieved": top1_text[:100] + "..."  # 只存前100字预览
-            })
+                is_hit_int = 1 if hit_rank > 0 else 0
+                mrr = 1.0 / hit_rank if hit_rank > 0 else 0.0
+                ndcg = calculate_ndcg(top_k, relevance_scores)
+
+                detailed_results.append({
+                    "Experiment": config["name"],
+                    "Category": category,
+                    "Question": query,
+                    "Is_Hit": is_hit_int,
+                    "MRR": mrr,
+                    "NDCG": ndcg,
+                    "Ground_Truth": ground_truth,
+                    "Retrieved_Top5": top5_text_combined  # 👈 这里改成了 Top5
+                })
+
+            except Exception as e:
+                print(f"❌ 单题报错: {e}")
+                detailed_results.append({
+                    "Experiment": config["name"],
+                    "Category": category,
+                    "Question": query,
+                    "Is_Hit": 0, "MRR": 0, "NDCG": 0,
+                    "Ground_Truth": ground_truth,
+                    "Retrieved_Top5": f"Error: {str(e)}"
+                })
 
         avg_latency = ((time.time() - start_time) * 1000) / len(dataset)
         df_res = pd.DataFrame(detailed_results)
@@ -189,16 +206,14 @@ class ExperimentRunner:
         return metrics, detailed_results
 
     def run(self, limit: int = None, target_exp: str = None):
-        # 生成带时间戳的文件名 (核心修改)
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         output_dir = project_root / "tests" / "data" / "reports"
-        output_dir.mkdir(parents=True, exist_ok=True)  # 自动创建 reports 文件夹
+        output_dir.mkdir(parents=True, exist_ok=True)
 
         suffix = f"_limit{limit}" if limit else "_full"
         summary_file = output_dir / f"report_summary_{timestamp}{suffix}.csv"
         details_file = output_dir / f"report_details_{timestamp}{suffix}.csv"
 
-        # 加载数据
         data_path = project_root / "tests" / "data" / "test_dataset.csv"
         if not data_path.exists():
             print(f"❌ 错误: 找不到 {data_path}")
@@ -215,47 +230,82 @@ class ExperimentRunner:
 
         print(f"📊 测试集: {len(df)} 条 | 🕒 任务ID: {timestamp}")
 
-        # 实验筛选
         experiments_to_run = self.configs
         if target_exp:
             experiments_to_run = [c for c in self.configs if c["name"].lower() == target_exp.lower()]
-            if not experiments_to_run:
-                print(f"❌ 错误: 未找到实验 '{target_exp}'")
-                return
 
-        # 运行
         all_metrics = []
         all_details = []
 
         for config in experiments_to_run:
-            # 👇 [修改] 暂时注释掉 try-except 以便显示详细报错
-            # try:
-            metrics, details = self.run_experiment(config, df)
-            all_metrics.append(metrics)
-            all_details.extend(details)
-            print(f"   👉 结果: Hit={metrics['Hit_Rate']:.2%} | MRR={metrics['MRR']:.4f}")
-            # except Exception as e:
-            #     print(f"❌ 实验 {config['name']} 失败: {e}")
+            try:
+                metrics, details = self.run_experiment(config, df)
+                all_metrics.append(metrics)
+                all_details.extend(details)
+            except Exception as e:
+                print(f"❌ 实验 {config['name']} 失败: {e}")
+                import traceback
+                traceback.print_exc()
 
-        # 保存结果 (无论是否 limit，都保存！)
         if all_metrics:
-            # 1. 保存汇总表
             final_df = pd.DataFrame(all_metrics)
-            print("\n" + "=" * 80)
-            print("🏆 实验汇总报告")
-            print("=" * 80)
-            print(final_df.to_string(index=False, float_format=lambda x: "{:.4f}".format(x)))
+
+            # 辅助函数：计算包含中文的显示宽度
+            def get_display_width(s):
+                width = 0
+                for char in str(s):
+                    if ord(char) > 127:
+                        width += 2
+                    else:
+                        width += 1
+                return width
+
+            def pad_string(s, target_width):
+                s = str(s)
+                current_width = get_display_width(s)
+                padding_len = max(0, target_width - current_width)
+                return s + " " * padding_len
+
+            print("\n" + "=" * 105)
+            print(f"🏆 消融实验汇总报告 (Ablation Study)")
+            print("=" * 105)
+
+            header_str = (
+                f"{pad_string('Exp', 6)} "
+                f"{pad_string('Description', 32)} "
+                f"{pad_string('Hit Rate', 12)} "
+                f"{pad_string('MRR', 12)} "
+                f"{pad_string('NDCG', 12)} "
+                f"{pad_string('Latency', 15)}"
+            )
+            print(header_str)
+            print("-" * 105)
+
+            for _, row in final_df.iterrows():
+                hit_rate = f"{row['Hit_Rate']:.4f}"
+                mrr = f"{row['MRR']:.4f}"
+                ndcg = f"{row['NDCG']:.4f}"
+                latency = f"{row['Latency(ms)']:.1f} ms"
+
+                line_str = (
+                    f"{pad_string(row['Experiment'], 6)} "
+                    f"{pad_string(row['Description'], 32)} "
+                    f"{pad_string(hit_rate, 12)} "
+                    f"{pad_string(mrr, 12)} "
+                    f"{pad_string(ndcg, 12)} "
+                    f"{pad_string(latency, 15)}"
+                )
+                print(line_str)
+
+            print("=" * 105)
 
             final_df.to_csv(summary_file, index=False, encoding='utf-8-sig')
-            print(f"\n✅ 汇总报表已保存: {summary_file}")
-
-            # 2. 保存明细表 (Case Study 素材)
             details_df = pd.DataFrame(all_details)
             details_df.to_csv(details_file, index=False, encoding='utf-8-sig')
-            print(f"✅ 详细记录已保存: {details_file}")
-            print(f"   (包含每一道题的得分和检索内容，可用于论文案例分析)")
+
+            print(f"\n✅ 报表已保存至: {output_dir}")
         else:
-            print("\n⚠️ 无实验结果生成")
+            print("\n⚠️ 无结果生成")
 
 
 if __name__ == "__main__":
