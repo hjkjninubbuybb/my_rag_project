@@ -12,7 +12,8 @@ Input (Disk: Staging) -> Processing (Memory) -> Output (Vector DB: Qdrant)
 """
 
 from llama_index.core import SimpleDirectoryReader, VectorStoreIndex
-from llama_index.core.node_parser import HierarchicalNodeParser, get_leaf_nodes
+# 👇【修改】使用 TokenTextSplitter 替代 HierarchicalNodeParser (移除 NLTK 依赖)
+from llama_index.core.node_parser import TokenTextSplitter
 
 from app.core.engine.factory import ModelFactory
 from app.core.engine.store import VectorStoreManager
@@ -32,10 +33,13 @@ class IngestionService:
         self.store_manager = VectorStoreManager()
         self.embed_model = ModelFactory.get_embedding()
 
-        # [核心组件] 层级切片器 (Hierarchical Chunking)
-        # 相比普通切片，这种方式能保留父子上下文，提升检索质量
-        self.node_parser = HierarchicalNodeParser.from_defaults(
-            chunk_sizes=[settings.chunk_size_parent, settings.chunk_size_child]
+        # [核心组件] 文本切片器
+        # 修改为 TokenTextSplitter，彻底移除对 NLTK 的隐式依赖。
+        # 这种方式按固定长度切分，对中文兼容性好，且不会因为 NLTK 分词错误导致崩溃。
+        self.node_parser = TokenTextSplitter(
+            chunk_size=settings.chunk_size_child,  # 复用配置 (如 512)
+            chunk_overlap=50,                      # 增加一点重叠，保持上下文连续
+            separator=" "                          # 备用分隔符
         )
 
     async def process_directory(self, input_dir: str):
@@ -69,31 +73,23 @@ class IngestionService:
             logger.warning("未找到文档，跳过处理")
             return
 
-        # 2. 生成节点树 (包含父节点和子节点)
+        # 2. 生成节点 (切片)
         nodes = self.node_parser.get_nodes_from_documents(documents)
+        logger.info(f"解析完成: 共生成 {len(nodes)} 个文本切片")
 
-        # 3. 提取叶子节点 (最小的子块，用于计算相似度)
-        leaf_nodes = get_leaf_nodes(nodes)
-
-        logger.info(f"解析完成: 总节点 {len(nodes)} | 叶子节点 {len(leaf_nodes)}")
-
-        # 4. 获取存储上下文 (连接 Qdrant)
+        # 3. 获取存储上下文 (连接 Qdrant)
         storage_context = self.store_manager.get_storage_context()
 
-        # 5. 将所有节点存入 DocStore (LlamaIndex 的内存/本地缓存)
+        # 4. 将所有节点存入 DocStore (LlamaIndex 的内存/本地缓存)
         storage_context.docstore.add_documents(nodes)
 
-        # 6. 构建索引 (Trigger Qdrant Write)
+        # 5. 构建索引 (Trigger Qdrant Write)
         # 这一步会触发 Embedding API 调用，并将向量写入 Qdrant
+        # 注意：稀疏向量 (Sparse Vector) 现在由 Store 层调用 BGE-M3 自动生成
         VectorStoreIndex(
-            leaf_nodes,
+            nodes,
             storage_context=storage_context,
             embed_model=self.embed_model
         )
 
-        # [Legacy Note]
-        # 旧版本 LlamaIndex 需要手动调用 persist()，
-        # 新版 QdrantClient 默认自动 commit，故删除。
-        # self.store_manager.persist()
-
-        logger.success("文档处理与索引构建完成！")
+        logger.success("文档处理与索引构建完成！(BGE-M3 + DashScope)")

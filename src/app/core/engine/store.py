@@ -18,6 +18,7 @@ from llama_index.core import StorageContext
 from qdrant_client import QdrantClient, models
 
 from app.settings import settings
+from app.core.engine.factory import ModelFactory
 
 
 class VectorStoreManager:
@@ -58,9 +59,20 @@ class VectorStoreManager:
         1. IngestionService 用它来写入向量。
         2. RetrievalService 用它来读取向量。
         """
+        # 👇【关键修改】获取自定义的稀疏编码函数
+        # 目的: 绕过 Qdrant 默认的 transformers/torch 依赖，使用轻量级 FastEmbed
+        sparse_doc_fn, sparse_query_fn = ModelFactory.get_qdrant_sparse_encoders()
+
         vector_store = QdrantVectorStore(
             client=self.client,
-            collection_name=self.COLLECTION_NAME
+            collection_name=self.COLLECTION_NAME,
+            # 开启混合检索支持 (必须显式开启)
+            enable_hybrid=True,
+            # 👇 显式传入函数，覆盖默认的 SPLADE 行为
+            sparse_doc_fn=sparse_doc_fn,
+            sparse_query_fn=sparse_query_fn,
+            # 批量写入优化
+            batch_size=20
         )
         return StorageContext.from_defaults(vector_store=vector_store)
 

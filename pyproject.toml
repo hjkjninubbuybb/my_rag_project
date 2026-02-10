@@ -1,45 +1,43 @@
 [tool.poetry]
 name = "my-rag-project"
 version = "0.1.0"
-description = "Enterprise RAG with LlamaIndex and LangGraph"
+description = "Enterprise RAG with LlamaIndex and LangGraph (BGE-M3 Enhanced)"
 authors = ["Your Name <your@email.com>"]
-
 packages = [{include = "app", from = "src"}]
 
 [tool.poetry.dependencies]
-python = ">=3.11,<3.13"
+python = ">=3.11,<3.12"
 
-# --- LlamaIndex 核心 (关键升级) ---
-# 从 0.11.0 升级到 0.13.0+ 以适配最新的 Qdrant 插件
+# --- LlamaIndex 核心 ---
+# 必须使用 0.13.0+ 以适配最新的 Qdrant 插件功能
 llama-index-core = "^0.13.0"
 
-# --- LlamaIndex 组件 (配套升级) ---
-# 核心升级后，建议将相关组件也放宽版本限制，让 Poetry 自动寻找匹配版本
+# --- 阿里云 DashScope 组件 ---
 llama-index-llms-dashscope = ">=0.2.0"
 llama-index-embeddings-dashscope = ">=0.2.0"
 llama-index-postprocessor-dashscope-rerank = ">=0.2.0"
 
-# OpenAI 组件 (保持兼容)
+# --- OpenAI 兼容层 (用于 factory.py) ---
 llama-index-embeddings-openai = ">=0.2.0"
 
-# 👇【关键修改】这里是解决报错的核心
-# 使用 0.9.1 或更高版本，它修复了 QdrantClient 的调用问题
+# --- 向量数据库 ---
+# 关键：修复 QdrantClient 调用问题的版本
 llama-index-vector-stores-qdrant = "^0.9.1"
+qdrant-client = "^1.16.2"
 
-# 文件读取
+# --- 文件读取 ---
 llama-index-readers-file = ">=0.2.0"
+pypdf = "^6.0.0"
+
+# --- [核心修改] 稀疏向量生成 ---
+# 移除 fastembed, 换成 FlagEmbedding (BGE-M3)
+FlagEmbedding = "^1.3.0"
 
 # --- 核心框架 ---
 langgraph = "^0.2.0"
 pydantic-settings = "^2.0.0"
 
-# [修改后] 改为 6.0.0 以上，以适配最新的 LlamaIndex Reader
-pypdf = "^6.0.0"
-
-# --- 本地稀疏向量生成 ---
-fastembed = "^0.4.0"
-
-# --- LangChain 全家桶 ---
+# --- LangChain 全家桶 (用于 Tool 封装) ---
 langchain = "^0.2.0"
 langchain-community = "^0.2.0"
 langchain-core = "^0.2.0"
@@ -48,9 +46,13 @@ langchain-openai = "^0.1.0"
 # --- 基础设施与 UI ---
 gradio = "^5.0.0"
 python-dotenv = "^1.0.0"
-# Qdrant 客户端保持最新
-qdrant-client = "^1.16.2"
 loguru = "^0.7.0"
+transformers = ">=4.40.0,<4.47.0"
+typer = "^0.21.1"
+fastapi = "^0.128.6"
+uvicorn = "^0.40.0"
+httpx = "^0.28.1"
+modelscope = "^1.34.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0.0"

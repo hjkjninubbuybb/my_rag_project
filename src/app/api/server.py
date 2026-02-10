@@ -15,6 +15,7 @@
 """
 
 import shutil
+import traceback  # 👇 新增，用于打印详细堆栈
 from pathlib import Path
 
 import gradio as gr
@@ -114,8 +115,9 @@ def create_ui():
         4. Cleanup: 立即清空物理暂存区，防止数据滞留。
         5. Refresh UI: 更新前端列表。
         """
+        # 👇【Bug 修复】确保这里返回 3 个值 (None)，否则 Gradio 会报 unpacking error
         if not UPLOAD_DIR.exists() or not any(UPLOAD_DIR.iterdir()):
-            return "⚠️ 暂存区为空，请先上传文件。", list_db_files()
+            return "⚠️ 暂存区为空，请先上传文件。", list_db_files(), None
 
         # 1. Snapshot: 先记下我们要处理哪些文件名
         files_to_process = [f.name for f in UPLOAD_DIR.iterdir() if f.is_file()]
@@ -136,6 +138,8 @@ def create_ui():
             return f"🎉 成功索引 {len(files_to_process)} 个文件！", None, list_db_files()
         except Exception as e:
             # 失败处理：保留暂存区文件，方便重试
+            # 👇 打印堆栈以便调试
+            traceback.print_exc()
             return f"❌ 处理失败: {str(e)}", list_staging_files(), list_db_files()
 
     def clear_staging():
@@ -203,6 +207,7 @@ def create_ui():
             clear_staging_btn.click(fn=clear_staging, inputs=None, outputs=[staging_file_output, log_output])
 
             # 入库操作：完成后更新日志、清空暂存区显示、刷新右侧数据库列表
+            # 👇 注意：这里定义了 3 个 outputs，所以 fn 必须返回 3 个值
             ingest_btn.click(fn=start_ingestion, inputs=None, outputs=[log_output, staging_file_output, db_file_list])
 
             refresh_db_btn.click(fn=list_db_files, inputs=None, outputs=db_file_list)
