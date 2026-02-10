@@ -8,7 +8,6 @@
 3. [Sparse] BGE-M3 (集成 ModelScope 极速下载)。
 """
 
-import os
 from typing import Dict, List, Tuple, Callable, Any
 
 # 👇 核心组件
