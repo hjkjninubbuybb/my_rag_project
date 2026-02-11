@@ -4,20 +4,26 @@
 
 核心职责:
 1. [ETL Process] 读取物理文件 -> 文本切片 (Chunking) -> 向量化 (Embedding) -> 存入 Qdrant。
-2. [Isolation] 它只负责 "入库" 这一动作。
+2. [Isolation] 它只负责 "入库" 这一动作，不负责文件管理。
 3. [Stateless] 它不感知 "文件状态" (SQLite)，也不负责 "清理磁盘" (rmtree)。
+
+核心升级 (Phase 4):
+1. [Strategy Injection] 文本切分策略不再硬编码，而是通过 ModelFactory 动态注入。
+2. [Ablation Support] 支持通过配置文件无缝切换 "Fixed Token" vs "Recursive" 策略，
+   无需修改业务代码即可运行对比实验。
 
 数据流向:
 Input (Disk: Staging) -> Processing (Memory) -> Output (Vector DB: Qdrant)
 """
 
 from llama_index.core import SimpleDirectoryReader, VectorStoreIndex
-# 👇【修改】使用 TokenTextSplitter 替代 HierarchicalNodeParser (移除 NLTK 依赖)
-from llama_index.core.node_parser import TokenTextSplitter
+# 🔴 Cleanup: 移除了 TokenTextSplitter 的直接依赖，实现解耦
+# from llama_index.core.node_parser import TokenTextSplitter
 
 from app.core.engine.factory import ModelFactory
 from app.core.engine.store import VectorStoreManager
-from app.settings import settings
+# 🔴 Cleanup: 移除了 settings 依赖，具体参数由 Factory 内部处理
+# from app.settings import settings
 from app.utils.logger import logger
 
 
@@ -25,22 +31,25 @@ class IngestionService:
     def __init__(self):
         """
         初始化加工车间
+
         Architecture Note:
-        - 仅获取 VectorStoreManager 实例来拿 storage_context，不直接调用其 delete 方法。
-        - 预加载 Embedding 模型 (Factory 模式)。
+        - [Dependency Injection] 切分器 (NodeParser) 由 ModelFactory 统一生产。
+        - [Singleton Access] 复用 StoreManager 和 Embedding 模型，减少资源开销。
         """
         # 初始化向量库管理器 (单例模式)
         self.store_manager = VectorStoreManager()
         self.embed_model = ModelFactory.get_embedding()
 
-        # [核心组件] 文本切片器
-        # 修改为 TokenTextSplitter，彻底移除对 NLTK 的隐式依赖。
-        # 这种方式按固定长度切分，对中文兼容性好，且不会因为 NLTK 分词错误导致崩溃。
-        self.node_parser = TokenTextSplitter(
-            chunk_size=settings.chunk_size_child,  # 复用配置 (如 512)
-            chunk_overlap=50,                      # 增加一点重叠，保持上下文连续
-            separator=" "                          # 备用分隔符
-        )
+        # [核心组件] 文本切片器 (Text Splitter)
+        #
+        # Critical Change (Phase 4):
+        # 之前的硬编码 TokenTextSplitter 已被移除。
+        # 现在调用工厂方法，根据 YAML 配置 ("fixed" vs "recursive") 动态获取切分器。
+        #
+        # 论文亮点:
+        # 这种 "策略模式" (Strategy Pattern) 允许系统在运行时改变算法行为，
+        # 是实现科学消融实验 (Ablation Study) 的工程基础。
+        self.node_parser = ModelFactory.get_text_splitter()
 
     async def process_directory(self, input_dir: str):
         """
@@ -62,6 +71,7 @@ class IngestionService:
         logger.info(f"开始处理目录: {input_dir}")
 
         # 1. 读取文件 (Source: Staging Area)
+        # 使用 LlamaIndex 的标准读取器，支持多层目录递归
         documents = SimpleDirectoryReader(
             input_dir=input_dir,
             recursive=True,
@@ -74,22 +84,27 @@ class IngestionService:
             return
 
         # 2. 生成节点 (切片)
+        # 这里的行为现在完全由 YAML 里的 `chunking_strategy` 决定
+        # - 如果是 "fixed": 按 Token 硬切
+        # - 如果是 "recursive": 按语义递归切
         nodes = self.node_parser.get_nodes_from_documents(documents)
         logger.info(f"解析完成: 共生成 {len(nodes)} 个文本切片")
 
         # 3. 获取存储上下文 (连接 Qdrant)
+        # 注意: 这里会自动指向 settings.collection_name 指定的实验集合 (多租户隔离)
         storage_context = self.store_manager.get_storage_context()
 
         # 4. 将所有节点存入 DocStore (LlamaIndex 的内存/本地缓存)
+        # 这一步对于后续的 "Auto-Merging Retrieval" (父子文档检索) 是必须的
         storage_context.docstore.add_documents(nodes)
 
         # 5. 构建索引 (Trigger Qdrant Write)
         # 这一步会触发 Embedding API 调用，并将向量写入 Qdrant
-        # 注意：稀疏向量 (Sparse Vector) 现在由 Store 层调用 BGE-M3 自动生成
+        # 稀疏向量 (Sparse Vector) 由 Store 层的 BGE-M3 适配器自动生成
         VectorStoreIndex(
             nodes,
             storage_context=storage_context,
             embed_model=self.embed_model
         )
 
-        logger.success("文档处理与索引构建完成！(BGE-M3 + DashScope)")
+        logger.success("文档处理与索引构建完成！(Strategy: Config-Driven)")
