@@ -1,0 +1,28 @@
+# configs/exp_semantic.yaml
+
+# --- 1. 实验元数据 ---
+experiment:
+  id: "exp_semantic_v1"
+  description: "中文语义分割实验 (Stage1:逗号微切分 -> Stage2:语义合并)"
+
+# --- 2. 核心策略配置 ---
+rag:
+  # 激活我们在 factory.py 里写的 "semantic" 分支
+  chunking_strategy: "semantic"
+
+  # 语义分割参数 (根据我们商定的策略)
+  # Buffer=3: 每次看前后各3个子句，平滑语义噪音
+  semantic_buffer_size: 3
+  # Threshold=80: 只有语义差异最大的 20% 处才切分 (因为子句切得很细，所以要倾向于合并)
+  semantic_breakpoint_threshold: 80
+
+  # 兜底参数 (虽然是语义切分，但这些参数仍可能影响某些底层逻辑，保持默认即可)
+  chunk_size_parent: 1024
+  chunk_size_child: 256
+  chunk_overlap: 50
+
+# --- 3. 隔离设置 (重要) ---
+storage:
+  # 使用一个新的集合名称，千万不要和之前的 "my_rag_collection" 混在一起
+  # 这样能保证我们查到的数据全是语义分割生成的
+  collection_name: "semantic_test_collection"
