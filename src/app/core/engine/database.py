@@ -1,98 +1,93 @@
-"""
-[Architecture Role: Ledger (账本)]
-此模块实现了 "三权分立" 架构中的 【账本层】。
-
-核心职责:
-1. [Source of Truth] 作为 UI "已索引文件列表" 的唯一数据源。
-2. [Metadata Only] 仅记录文件的元数据 (文件名、索引时间)，绝不存储向量或文件内容。
-3. [High Performance] 提供毫秒级的文件名查询能力 (相比遍历 Qdrant 向量库，查 SQLite 极快)。
-
-架构交互:
-- [Read] Server.py 读取此模块来刷新 UI 列表。
-- [Write] Server.py 在 Ingestion 成功后写入此模块。
-- [Delete] Server.py 在用户点击删除时，同步删除此处的记录。
-"""
-
 import sqlite3
 import os
-from datetime import datetime
+from app.settings import settings
 
 class DatabaseManager:
     """
-    负责管理文件的元数据 (SQLite)
+    负责管理文件的元数据 (SQLite) - Phase 3 Safety Enhanced
     """
     DB_NAME = "metadata.db"
 
     def __init__(self):
-        # 自动初始化数据库表
         self._init_db()
 
     def _get_connection(self):
-        return sqlite3.connect(self.DB_NAME)
+        # 🔴 Safety: 允许跨线程访问，防止 Gradio 多线程环境下报错
+        return sqlite3.connect(self.DB_NAME, check_same_thread=False)
 
     def _init_db(self):
-        """如果表不存在，则创建"""
+        """初始化数据库，包含 Schema 完整性检查"""
+        # 1. 建表
         with self._get_connection() as conn:
             cursor = conn.cursor()
             cursor.execute('''
                 CREATE TABLE IF NOT EXISTS indexed_files (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    filename TEXT UNIQUE NOT NULL,
-                    indexed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    filename TEXT NOT NULL,
+                    collection_name TEXT NOT NULL,
+                    indexed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    UNIQUE(filename, collection_name)
                 )
             ''')
             conn.commit()
 
-    def add_file(self, filename: str):
-        """
-        [记账操作] 添加一个已索引的文件记录
+        # 2. 🔴 Safety Check: 检查表结构是否匹配
+        # 防止用户忘记删除旧 DB，导致运行时 crash
+        try:
+            with self._get_connection() as conn:
+                cursor = conn.cursor()
+                # 尝试查询 collection_name 字段
+                cursor.execute("SELECT collection_name FROM indexed_files LIMIT 1")
+        except sqlite3.OperationalError:
+            # 如果报错 "no such column"，说明是旧的数据库文件
+            error_msg = (
+                "\n❌ [Fatal Error] 数据库结构不匹配！\n"
+                "检测到旧版 'metadata.db'，缺少 'collection_name' 字段。\n"
+                "👉 请手动删除项目根目录下的 'metadata.db' 文件，然后重试。\n"
+            )
+            print(error_msg)
+            # 强制退出，防止后续产生脏数据
+            raise SystemExit(error_msg)
 
-        Trigger: 当 IngestionService 成功将文档存入 Qdrant 后，由 Server.py 调用。
-        Note: 使用 INSERT OR IGNORE 防止重复记录同一文件名。
-        """
+    def add_file(self, filename: str):
+        target_collection = settings.collection_name
         try:
             with self._get_connection() as conn:
                 cursor = conn.cursor()
                 cursor.execute(
-                    "INSERT OR IGNORE INTO indexed_files (filename) VALUES (?)",
-                    (filename,)
+                    "INSERT OR IGNORE INTO indexed_files (filename, collection_name) VALUES (?, ?)",
+                    (filename, target_collection)
                 )
                 conn.commit()
-                print(f"📝 [SQLite] 已记录文件: {filename}")
+                # 仅当真正插入（rowcount > 0）时打印，避免 IGNORE 造成的误导
+                if cursor.rowcount > 0:
+                    print(f"📝 [SQLite] 已记录: {filename} @ {target_collection}")
         except Exception as e:
             print(f"❌ [SQLite] 添加失败: {e}")
 
     def remove_file(self, filename: str):
-        """
-        [销账操作] 删除文件记录
-
-        Trigger: 当用户在 UI 点击 "删除选中" 时调用。
-        Side Effect: 仅删除元数据。
-        Critical: 必须与 StoreManager.delete_file() 配合使用，才能实现彻底删除。
-        """
+        target_collection = settings.collection_name
         try:
             with self._get_connection() as conn:
                 cursor = conn.cursor()
                 cursor.execute(
-                    "DELETE FROM indexed_files WHERE filename = ?",
-                    (filename,)
+                    "DELETE FROM indexed_files WHERE filename = ? AND collection_name = ?",
+                    (filename, target_collection)
                 )
                 conn.commit()
-                print(f"🗑️ [SQLite] 已移除记录: {filename}")
+                print(f"🗑️ [SQLite] 已移除记录: {filename} @ {target_collection}")
         except Exception as e:
             print(f"❌ [SQLite] 删除失败: {e}")
 
     def get_all_files(self) -> list[str]:
-        """
-        [查账操作] 获取所有已索引的文件名
-
-        Usage: 供 UI (Gradio) 刷新列表使用。
-        Performance: 极快 (直接查 SQL)，避免了遍历向量库的性能瓶颈。
-        """
+        target_collection = settings.collection_name
         try:
             with self._get_connection() as conn:
                 cursor = conn.cursor()
-                cursor.execute("SELECT filename FROM indexed_files ORDER BY indexed_at DESC")
+                cursor.execute(
+                    "SELECT filename FROM indexed_files WHERE collection_name = ? ORDER BY indexed_at DESC",
+                    (target_collection,)
+                )
                 rows = cursor.fetchall()
                 return [row[0] for row in rows]
         except Exception as e:
