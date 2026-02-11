@@ -1,0 +1,26 @@
+# configs/exp_sentence.yaml
+
+# --- 1. 实验元数据 ---
+experiment:
+  id: "exp_sentence_v1"
+  description: "中文增强型句子分割 (正则微切分 + 固定大小合并)"
+
+# --- 2. 核心策略配置 ---
+rag:
+  # 策略选择 "sentence" (对应 factory.py 中的 SentenceSplitter)
+  # 注意：由于我们在代码里注入了 chinese_sentence_splitter，
+  # 它不再是 LlamaIndex 原生的逻辑，而是懂中文逗号/分号的增强版。
+  chunking_strategy: "sentence"
+
+  # 合并参数
+  # 既然是按句子切分，这里的 chunk_size_child 指的是
+  # "尽量塞满 256 个 Token，但绝对不要在句子中间切断"
+  chunk_size_child: 256
+
+  # 重叠窗口 (在句子粒度下，重叠会以句子为单位)
+  chunk_overlap: 50
+
+# --- 3. 隔离设置 ---
+storage:
+  # 使用独立集合，方便观察效果
+  collection_name: "sentence_test_collection"
