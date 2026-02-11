@@ -9,11 +9,11 @@ os.environ["no_proxy"] = "localhost,127.0.0.1,::1"
 # BGE-M3 需要从这里下载模型
 os.environ["HF_ENDPOINT"] = "https://hf-mirror.com"
 
-# 路径修复
-current_file_path = Path(__file__).resolve()
-src_path = current_file_path.parent.parent
-if str(src_path) not in sys.path:
-    sys.path.insert(0, str(src_path))
+# [已废弃] 因为用了专业的 poetry install 方式，下面这几行不要了
+# current_file_path = Path(__file__).resolve()
+# src_path = current_file_path.parent.parent
+# if str(src_path) not in sys.path:
+#     sys.path.insert(0, str(src_path))
 
 from app.api.server import create_ui
 from app.settings import settings

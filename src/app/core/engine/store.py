@@ -1,18 +1,5 @@
-"""
-[Architecture Role: Memory (记忆)]
-此模块实现了 "三权分立" 架构中的 【记忆层】。
-
-核心职责:
-1. [Vector Storage] 封装 Qdrant 向量数据库的所有底层操作。
-2. [Context Provider] 为 Ingestion 和 Retrieval 提供 StorageContext。
-3. [Physical Deletion] 负责从磁盘上物理清除向量数据。
-
-架构边界:
-- 它 **不负责** 维护 "已索引文件列表" (那是 Ledger/SQLite 的职责)。
-- 它 **不感知** 文件的上传或暂存状态 (那是 Staging 的职责)。
-"""
-
 import os
+import atexit  # 👈 1. 新增导入
 from llama_index.vector_stores.qdrant import QdrantVectorStore
 from llama_index.core import StorageContext
 from qdrant_client import QdrantClient, models
@@ -41,6 +28,7 @@ class VectorStoreManager:
         初始化连接
         Side Effect: 如果本地路径不存在，会自动创建目录。
         """
+        # 单例检查：如果已经有 client 了，直接复用
         if VectorStoreManager._client is not None:
             self.client = VectorStoreManager._client
             return
@@ -52,6 +40,27 @@ class VectorStoreManager:
         self.client = QdrantClient(path=settings.qdrant_path)
         VectorStoreManager._client = self.client
 
+        # 👇 2. 注册退出钩子：程序死掉前，强制执行 close()
+        # 这一步是解决 "LockError" 的关键
+        atexit.register(self.close_connection)
+
+    def close_connection(self):  # 👈 3. 新增关闭方法
+        """
+        [Resource Cleanup] 显式关闭连接，释放文件锁
+        Trigger: 程序退出时 (atexit) 自动调用
+        """
+        if self.client:
+            print("🔌 [System] 正在关闭 Qdrant 连接，释放资源...")
+            try:
+                self.client.close()
+                print("✅ [System] Qdrant 连接已安全关闭。")
+            except Exception as e:
+                print(f"⚠️ [System] 关闭 Qdrant 时发生警告: {e}")
+            finally:
+                # 清理类变量，防止单例残留
+                VectorStoreManager._client = None
+                self.client = None
+
     def get_storage_context(self):
         """
         [Context Provider] 获取 LlamaIndex 存储上下文
@@ -59,7 +68,7 @@ class VectorStoreManager:
         1. IngestionService 用它来写入向量。
         2. RetrievalService 用它来读取向量。
         """
-        # 👇【关键修改】获取自定义的稀疏编码函数
+        # 获取自定义的稀疏编码函数
         # 目的: 绕过 Qdrant 默认的 transformers/torch 依赖，使用轻量级 FastEmbed
         sparse_doc_fn, sparse_query_fn = ModelFactory.get_qdrant_sparse_encoders()
 
@@ -68,7 +77,7 @@ class VectorStoreManager:
             collection_name=self.COLLECTION_NAME,
             # 开启混合检索支持 (必须显式开启)
             enable_hybrid=True,
-            # 👇 显式传入函数，覆盖默认的 SPLADE 行为
+            # 显式传入函数，覆盖默认的 SPLADE 行为
             sparse_doc_fn=sparse_doc_fn,
             sparse_query_fn=sparse_query_fn,
             # 批量写入优化
