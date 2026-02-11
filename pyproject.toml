@@ -28,6 +28,8 @@ qdrant-client = "^1.16.2"
 # --- 文件读取 ---
 llama-index-readers-file = ">=0.2.0"
 pypdf = "^6.0.0"
+# 👇 [新增] 解析 .docx 文件的轻量级库，防止加载器初始化卡顿
+docx2txt = "^0.8"
 
 # --- [核心修改] 稀疏向量生成 ---
 # 移除 fastembed, 换成 FlagEmbedding (BGE-M3)

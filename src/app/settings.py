@@ -5,8 +5,9 @@ from typing import Optional, Set
 from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-# 🛡️ 定义合法的切片策略白名单
-VALID_STRATEGIES: Set[str] = {"fixed", "recursive", "sentence"}
+# 🛡️ [Security] 定义合法的切片策略白名单
+# 新增 "semantic" 策略支持
+VALID_STRATEGIES: Set[str] = {"fixed", "recursive", "sentence", "semantic"}
 
 
 class Settings(BaseSettings):
@@ -29,14 +30,26 @@ class Settings(BaseSettings):
 
     # [RAG Strategy Group]
     chunking_strategy: str = "fixed"
+
+    # 父文档块大小 (用于 Auto-Merging 的上下文窗口)
     chunk_size_parent: int = 1024
-
-    # 🔴 修复点：添加了 : int = ，之前漏掉了类型和等号
+    # 子文档块/实际索引块大小 (基准切分大小)
     chunk_size_child: int = 256
-
+    # 重叠窗口
     chunk_overlap: int = 50
+
     retrieval_top_k: int = 50
     rerank_top_k: int = 5
+
+    # [Semantic Splitting Group] (新增 - 针对中文优化的参数)
+    # 缓冲区大小 (Buffer Size):
+    # 中文短句较多，设为 3 意味着算法会看前后各 3 个子句来平滑语义噪音。
+    semantic_buffer_size: int = 3
+
+    # 语义差异阈值 (Breakpoint Threshold):
+    # 基于百分位 (Percentile)。因为我们按逗号切得很细，大部分相邻子句语义都连贯。
+    # 设为 80 意味着忽略掉 80% 的微小波动，只在语义差异最大的 20% 处切分。
+    semantic_breakpoint_threshold: int = 80
 
     # [Meta Group]
     experiment_id: str = "default"
@@ -115,11 +128,20 @@ class Settings(BaseSettings):
                 self.retrieval_top_k = r.get("retrieval_top_k", self.retrieval_top_k)
                 self.rerank_top_k = r.get("rerank_top_k", self.rerank_top_k)
 
+                # [Update] 读取语义分割参数
+                self.semantic_buffer_size = r.get("semantic_buffer_size", self.semantic_buffer_size)
+                self.semantic_breakpoint_threshold = r.get("semantic_breakpoint_threshold",
+                                                           self.semantic_breakpoint_threshold)
+
             # 3. 打印成功日志
             print(f"✅ [Config] 加载完成 | 实验ID: {self.experiment_id}")
             print(f"   -> 集合: {self.collection_name}")
             print(
                 f"   -> 策略: {self.chunking_strategy} (Size: {self.chunk_size_child}, Overlap: {self.chunk_overlap})")
+
+            if self.chunking_strategy == "semantic":
+                print(
+                    f"   -> [Semantic] Buffer: {self.semantic_buffer_size}, Threshold: {self.semantic_breakpoint_threshold}")
 
         except Exception as e:
             print(f"❌ [Fatal] 解析配置文件失败: {e}")
