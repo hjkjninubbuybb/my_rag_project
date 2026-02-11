@@ -1,0 +1,48 @@
+# configs/default.yaml
+
+# --- 实验元数据 ---
+experiment:
+  # 实验唯一标识 (用于区分不同的测试批次)
+  id: "baseline_default"
+  # 实验描述 (用于记录当前实验的目的)
+  description: "基准配置 (Qwen-Plus + 阿里Embedding + 固定切片)"
+
+# --- 模型配置 ---
+model:
+  # LLM 模型名称 (对应 DashScope 模型名)
+  llm_model: "qwen-plus"
+  # Embedding 模型名称
+  embedding_model: "text-embedding-v4"
+  # 向量维度 (text-embedding-v4 为 1536)
+  embedding_dim: 1536
+
+# --- 存储配置 ---
+storage:
+  # Qdrant 本地数据库路径
+  qdrant_path: "qdrant_db"
+  # 向量集合名称 (核心：修改此处可实现多租户数据隔离)
+  collection_name: "my_rag_collection"
+
+# --- RAG 策略配置 (核心消融实验参数) ---
+rag:
+  # ✂️ 切片策略 (Chunking Strategy):
+  #   - "fixed": 固定 Token 长度切分 (基准方案, 简单高效)
+  #   - "recursive": 递归字符切分 (LangChain/LlamaIndex 默认, 语义保持更好)
+  #   - "sentence": 句子完整性切分 (基于标点符号保持句子完整)
+  chunking_strategy: "fixed"
+
+  # 📏 切片参数
+  # 父文档块大小 (用于上下文窗口)
+  chunk_size_parent: 1024
+  # 子文档块/实际索引块大小
+  chunk_size_child: 256
+
+  # 🔄 重叠窗口 (Chunk Overlap)
+  # 增加重叠可以缓解切分处的语义丢失，通常设为 chunk_size 的 10%-20%
+  chunk_overlap: 50
+
+  # 🔍 检索参数
+  # 初筛数量 (Vector Search Top K)
+  retrieval_top_k: 50
+  # 重排序数量 (Rerank Top N)
+  rerank_top_k: 5
