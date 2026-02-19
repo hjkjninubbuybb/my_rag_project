@@ -1,6 +1,6 @@
 # --- 隐私与密钥 (极其重要) ---
 .env
-.env.*
+!.env.example
 *.key
 *.pem
 
@@ -25,6 +25,7 @@ ENV/
 # --- 核心数据与大文件 (RAG 特有) ---
 # 1. 向量数据库
 qdrant_db/
+data/vectordb/
 
 # 2. 模型权重 (BGE-M3 等)
 resources/
@@ -32,13 +33,20 @@ resources/
 # 3. 运行日志与报告
 *.log
 tests/data/reports/
+data/reports/
 data/uploads/
 
 # 4. 本地数据库文件
 *.sqlite
 *.db
-!tests/data/*.db  # 如果测试集里有必要的初始化DB，可以用!排除，否则全部忽略
+!tests/data/*.db
 
 # --- 操作系统临时文件 ---
 .DS_Store
 Thumbs.db
+
+# --- Claude Code 内部文件 ---
+.claude/
+
+# --- Windows 误生成文件 ---
+nul

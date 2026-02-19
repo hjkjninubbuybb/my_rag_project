@@ -5,9 +5,8 @@ from typing import Optional, Set
 from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-# 🛡️ [Security] 定义合法的切片策略白名单
-# 新增 "semantic" 策略支持
-VALID_STRATEGIES: Set[str] = {"fixed", "recursive", "sentence", "semantic"}
+# 🛡️ 定义合法的切片策略白名单
+VALID_STRATEGIES: Set[str] = {"fixed", "recursive", "sentence"}
 
 
 class Settings(BaseSettings):
@@ -19,37 +18,35 @@ class Settings(BaseSettings):
 
     # === 2. 实验可变参数 (默认值作为兜底) ===
 
+    # [Provider Group] — 供应商名称（对应 ComponentRegistry 注册的 key）
+    llm_provider: str = "dashscope"
+    embedding_provider: str = "dashscope"
+    reranker_provider: str = "dashscope"
+
     # [Model Group]
     llm_model: str = "qwen-plus"
+    llm_temperature: float = 0.1
     embedding_model: str = "text-embedding-v4"
     embedding_dim: int = 1536
+    reranker_model: str = "gte-rerank"
 
     # [Storage Group]
-    qdrant_path: str = "qdrant_db"
+    qdrant_path: str = "data/vectordb"
+    metadata_db_path: str = "data/metadata.db"
     collection_name: str = "my_rag_collection"
 
     # [RAG Strategy Group]
     chunking_strategy: str = "fixed"
-
-    # 父文档块大小 (用于 Auto-Merging 的上下文窗口)
     chunk_size_parent: int = 1024
-    # 子文档块/实际索引块大小 (基准切分大小)
     chunk_size_child: int = 256
-    # 重叠窗口
     chunk_overlap: int = 50
-
     retrieval_top_k: int = 50
     rerank_top_k: int = 5
 
-    # [Semantic Splitting Group] (新增 - 针对中文优化的参数)
-    # 缓冲区大小 (Buffer Size):
-    # 中文短句较多，设为 3 意味着算法会看前后各 3 个子句来平滑语义噪音。
-    semantic_buffer_size: int = 3
-
-    # 语义差异阈值 (Breakpoint Threshold):
-    # 基于百分位 (Percentile)。因为我们按逗号切得很细，大部分相邻子句语义都连贯。
-    # 设为 80 意味着忽略掉 80% 的微小波动，只在语义差异最大的 20% 处切分。
-    semantic_breakpoint_threshold: int = 80
+    # [Retrieval Pipeline Switches]
+    enable_hybrid: bool = True
+    enable_auto_merge: bool = True
+    enable_rerank: bool = True
 
     # [Meta Group]
     experiment_id: str = "default"
@@ -61,6 +58,38 @@ class Settings(BaseSettings):
         env_file_encoding="utf-8",
         extra="ignore"
     )
+
+    def to_experiment_config(self):
+        """桥梁方法: 将全局 Settings 转为不可变 ExperimentConfig。
+
+        便于从旧代码平滑过渡到基于 config 的依赖注入。
+        """
+        from rag.config.experiment import ExperimentConfig
+
+        return ExperimentConfig(
+            experiment_id=self.experiment_id,
+            experiment_description=self.experiment_description,
+            llm_provider=self.llm_provider,
+            llm_model=self.llm_model,
+            llm_temperature=self.llm_temperature,
+            embedding_provider=self.embedding_provider,
+            embedding_model=self.embedding_model,
+            embedding_dim=self.embedding_dim,
+            reranker_provider=self.reranker_provider,
+            reranker_model=self.reranker_model,
+            qdrant_path=self.qdrant_path,
+            collection_name_override=self.collection_name,
+            chunking_strategy=self.chunking_strategy,
+            chunk_size_parent=self.chunk_size_parent,
+            chunk_size_child=self.chunk_size_child,
+            chunk_overlap=self.chunk_overlap,
+            enable_hybrid=self.enable_hybrid,
+            enable_auto_merge=self.enable_auto_merge,
+            enable_rerank=self.enable_rerank,
+            retrieval_top_k=self.retrieval_top_k,
+            rerank_top_k=self.rerank_top_k,
+            dashscope_api_key=self.dashscope_api_key or "",
+        )
 
     def load_experiment_config(self, config_path: str):
         """
@@ -95,15 +124,21 @@ class Settings(BaseSettings):
             # --- Model Group ---
             if "model" in config_data:
                 m = config_data["model"]
+                self.llm_provider = m.get("llm_provider", self.llm_provider)
                 self.llm_model = m.get("llm_model", self.llm_model)
+                self.llm_temperature = m.get("llm_temperature", self.llm_temperature)
+                self.embedding_provider = m.get("embedding_provider", self.embedding_provider)
                 self.embedding_model = m.get("embedding_model", self.embedding_model)
                 self.embedding_dim = m.get("embedding_dim", self.embedding_dim)
+                self.reranker_provider = m.get("reranker_provider", self.reranker_provider)
+                self.reranker_model = m.get("reranker_model", self.reranker_model)
 
             # --- Storage Group ---
             if "storage" in config_data:
                 s = config_data["storage"]
                 self.qdrant_path = s.get("qdrant_path", self.qdrant_path)
                 self.collection_name = s.get("collection_name", self.collection_name)
+                self.metadata_db_path = s.get("metadata_db_path", self.metadata_db_path)
 
             # --- RAG Strategy Group (核心) ---
             if "rag" in config_data:
@@ -128,20 +163,18 @@ class Settings(BaseSettings):
                 self.retrieval_top_k = r.get("retrieval_top_k", self.retrieval_top_k)
                 self.rerank_top_k = r.get("rerank_top_k", self.rerank_top_k)
 
-                # [Update] 读取语义分割参数
-                self.semantic_buffer_size = r.get("semantic_buffer_size", self.semantic_buffer_size)
-                self.semantic_breakpoint_threshold = r.get("semantic_breakpoint_threshold",
-                                                           self.semantic_breakpoint_threshold)
+            # --- Retrieval Pipeline Group ---
+            if "retrieval" in config_data:
+                ret = config_data["retrieval"]
+                self.enable_hybrid = ret.get("enable_hybrid", self.enable_hybrid)
+                self.enable_auto_merge = ret.get("enable_auto_merge", self.enable_auto_merge)
+                self.enable_rerank = ret.get("enable_rerank", self.enable_rerank)
 
             # 3. 打印成功日志
             print(f"✅ [Config] 加载完成 | 实验ID: {self.experiment_id}")
             print(f"   -> 集合: {self.collection_name}")
             print(
                 f"   -> 策略: {self.chunking_strategy} (Size: {self.chunk_size_child}, Overlap: {self.chunk_overlap})")
-
-            if self.chunking_strategy == "semantic":
-                print(
-                    f"   -> [Semantic] Buffer: {self.semantic_buffer_size}, Threshold: {self.semantic_breakpoint_threshold}")
 
         except Exception as e:
             print(f"❌ [Fatal] 解析配置文件失败: {e}")

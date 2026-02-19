@@ -19,7 +19,7 @@ model:
 # --- 存储配置 ---
 storage:
   # Qdrant 本地数据库路径
-  qdrant_path: "qdrant_db"
+  qdrant_path: "data/vectordb"
   # 向量集合名称 (核心：修改此处可实现多租户数据隔离)
   collection_name: "my_rag_collection"
 

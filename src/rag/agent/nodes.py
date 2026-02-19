@@ -1,11 +1,27 @@
-from langchain_core.messages import SystemMessage, HumanMessage, AIMessage, RemoveMessage
+"""
+LangGraph 图节点实现。
+
+节点职责：
+1. summarize    — 压缩对话历史
+2. rewrite      — LLM 驱动的问题分析与拆分
+3. agent        — ReAct 循环（工具调用）
+4. extract      — 提取最终答案 + 收集 debug 数据
+5. aggregate    — 聚合多子问题答案（单问题直通）
+"""
+
+import json
+
+from langchain_core.messages import (
+    SystemMessage, HumanMessage, AIMessage, ToolMessage,
+)
 from langchain_core.language_models import BaseChatModel
 
-from app.core.graph.state import State, AgentState
-from app.core.graph.prompts import (
+from rag.agent.state import State, AgentState
+from rag.agent.prompts import (
     get_conversation_summary_prompt,
+    get_query_rewrite_prompt,
     get_rag_agent_prompt,
-    get_aggregation_prompt
+    get_aggregation_prompt,
 )
 
 
@@ -30,61 +46,78 @@ async def analyze_chat_and_summarize(state: State, llm: BaseChatModel):
         role = "User" if isinstance(msg, HumanMessage) else "Assistant"
         conversation += f"{role}: {msg.content}\n"
 
-    # 使用较低温度进行总结
     summary_llm = llm.with_config(temperature=0.1)
     response = await summary_llm.ainvoke(
         [SystemMessage(content=get_conversation_summary_prompt())] +
         [HumanMessage(content=conversation)]
     )
 
-    # 返回总结，并重置 agent_answers（准备开始新一轮搜索）
     return {
         "conversation_summary": response.content,
-        "agent_answers": [{"__reset__": True}]
+        "agent_answers": [{"__reset__": True}],
+        "debug_retrieved_chunks": [],
     }
 
 
-# --- 节点 2: 问题分析与重写 (直通优化版) ---
+# --- 节点 2: 问题分析与拆分 ---
 async def analyze_and_rewrite_query(state: State, llm: BaseChatModel):
     """
-    直通模式：直接将用户问题作为搜索查询
-    如果需要改写，可以在这里接入 LLM，但目前保持直通以确保稳定性。
+    LLM 驱动的问题分析：判断是否需要拆分为多个子问题。
+    解析失败时降级为直通模式，保证健壮性。
     """
     last_message = state["messages"][-1]
     query = last_message.content
+    summary = state.get("conversation_summary", "")
 
-    # 简单逻辑：默认问题是清晰的
-    # 如果需要复杂的意图识别，可以在这里扩展
+    # 构造带上下文的输入
+    user_input = query
+    if summary:
+        user_input = f"对话背景: {summary}\n当前问题: {query}"
+
+    try:
+        response = await llm.ainvoke([
+            SystemMessage(content=get_query_rewrite_prompt()),
+            HumanMessage(content=user_input),
+        ])
+
+        result = json.loads(response.content)
+        questions = result.get("questions", [query])
+        if not questions:
+            questions = [query]
+    except (json.JSONDecodeError, KeyError, Exception):
+        # 降级为直通
+        questions = [query]
+
     return {
         "questionIsClear": True,
         "originalQuery": query,
-        "rewrittenQuestions": [query]  # 保持列表格式，兼容后续的 Map 操作
+        "rewrittenQuestions": questions,
     }
 
 
-# --- 节点 3: 人工介入 (占位符) ---
-def human_input_node(state: State):
-    # LangGraph 会在这里中断 (interrupt_before)
-    return {}
-
-
-# --- 节点 4: 执行 Agent (ReAct) ---
+# --- 节点 3: 执行 Agent (ReAct) ---
 async def agent_node(state: AgentState, llm_with_tools: BaseChatModel):
     sys_msg = SystemMessage(content=get_rag_agent_prompt())
 
-    # 如果是第一次进入子图，messages 为空，需要把 question 塞进去
+    # 第一次进入子图：messages 为空，将 question 作为 HumanMessage
     if not state.get("messages"):
         human_msg = HumanMessage(content=state["question"])
         response = await llm_with_tools.ainvoke([sys_msg, human_msg])
         return {"messages": [human_msg, response]}
 
-    # 后续轮次（Tool执行完回来），带上历史记录继续思考
+    # 后续轮次（Tool 执行完回来），带上历史继续推理
     response = await llm_with_tools.ainvoke([sys_msg] + state["messages"])
     return {"messages": [response]}
 
 
-# --- 节点 5: 提取最终答案 ---
+# --- 节点 4: 提取最终答案 ---
 def extract_final_answer(state: AgentState):
+    # 收集所有 ToolMessage 的 artifact（检索 debug 数据）
+    debug_chunks = []
+    for msg in state["messages"]:
+        if isinstance(msg, ToolMessage) and getattr(msg, "artifact", None):
+            debug_chunks.extend(msg.artifact)
+
     # 倒序查找最后一条 AI 的文本回复（且没有工具调用）
     for msg in reversed(state["messages"]):
         if isinstance(msg, AIMessage) and msg.content and not msg.tool_calls:
@@ -93,8 +126,9 @@ def extract_final_answer(state: AgentState):
                 "agent_answers": [{
                     "index": state["question_index"],
                     "question": state["question"],
-                    "answer": msg.content
-                }]
+                    "answer": msg.content,
+                }],
+                "debug_retrieved_chunks": debug_chunks,
             }
 
     return {
@@ -102,27 +136,32 @@ def extract_final_answer(state: AgentState):
         "agent_answers": [{
             "index": state["question_index"],
             "question": state["question"],
-            "answer": "抱歉，未能找到相关答案。"
-        }]
+            "answer": "抱歉，未能找到相关答案。",
+        }],
+        "debug_retrieved_chunks": debug_chunks,
     }
 
 
-# --- 节点 6: 聚合回答 ---
+# --- 节点 5: 聚合回答 ---
 async def aggregate_responses(state: State, llm: BaseChatModel):
     answers = state.get("agent_answers", [])
     if not answers:
         return {"messages": [AIMessage(content="未生成任何回答。")]}
 
-    # 按索引排序，保证顺序一致
     sorted_answers = sorted(answers, key=lambda x: x["index"])
 
+    # 单问题直通：跳过 LLM 聚合调用，减少延迟
+    if len(sorted_answers) == 1:
+        return {"messages": [AIMessage(content=sorted_answers[0]["answer"])]}
+
+    # 多问题：LLM 聚合
     formatted = "\n".join([
-        f"Answer {i + 1}:\n{ans['answer']}\n"
+        f"子问题 {i + 1}: {ans['question']}\n回答:\n{ans['answer']}\n"
         for i, ans in enumerate(sorted_answers)
     ])
 
     user_msg = HumanMessage(
-        content=f"Original Question: {state['originalQuery']}\nRetrieved Answers:\n{formatted}"
+        content=f"原始问题: {state['originalQuery']}\n\n检索到的分答案:\n{formatted}"
     )
 
     response = await llm.ainvoke(

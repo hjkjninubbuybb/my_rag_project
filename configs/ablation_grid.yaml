@@ -1,0 +1,35 @@
+# configs/ablation_grid.yaml
+# 消融实验矩阵定义
+# 所有维度的笛卡尔积将作为实验组合
+
+# --- 网格维度 (参与笛卡尔积) ---
+grid:
+  # 切片策略
+  chunking_strategies: ["fixed", "recursive", "sentence"]
+  # 子文档块大小
+  chunk_sizes_child: [128, 256, 512]
+  # 重叠窗口
+  chunk_overlaps: [25, 50]
+  # 父文档块大小
+  chunk_sizes_parent: [1024]
+
+  # 检索管线开关
+  enable_hybrid: [true, false]
+  enable_auto_merge: [true, false]
+  enable_rerank: [true, false]
+
+  # 模型选择
+  llm_models: ["qwen-plus"]
+  embedding_models: ["text-embedding-v4"]
+  reranker_models: ["gte-rerank"]
+
+# --- 固定参数 (不参与笛卡尔积) ---
+fixed:
+  llm_provider: "dashscope"
+  embedding_provider: "dashscope"
+  reranker_provider: "dashscope"
+  embedding_dim: 1536
+  llm_temperature: 0.1
+  qdrant_path: "data/vectordb"
+  retrieval_top_k: 50
+  rerank_top_k: 5

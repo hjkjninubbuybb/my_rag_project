@@ -1,0 +1,62 @@
+# configs/best_retrieval.yaml
+#
+# 消融实验最优检索配置 (基于 75 题基准测试)
+# ────────────────────────────────────────────────────────────────
+# 实验结论: sentence 切片 + 混合检索 (hybrid) + 重排序 (rerank)
+# 是三项策略的综合最优组合。
+#
+# 关键指标 (n=75):
+#   Hit Rate : 0.9067  (+5.3% vs baseline fixed)
+#   MRR      : 0.6584  (+2.2% vs baseline fixed)
+#   NDCG     : 0.7160  (+3.3% vs baseline fixed)
+#   延迟      : ~2707ms
+#
+# 使用前提:
+#   知识库需使用本配置中的切片参数重新入库。
+#   入库指纹 (ingestion_fingerprint) 决定 Qdrant collection 名称。
+#   若已运行消融实验，collection "exp_497d0d8821b9" 可直接复用。
+# ────────────────────────────────────────────────────────────────
+
+# --- 实验元数据 ---
+experiment:
+  id: "best_retrieval"
+  description: "最优配置 (Sentence切片 + Hybrid + Rerank) | HitRate=90.7%, NDCG=0.716"
+
+# --- 模型配置 ---
+model:
+  llm_model: "qwen-plus"
+  embedding_model: "text-embedding-v4"
+  embedding_dim: 1536
+
+# --- 存储配置 ---
+storage:
+  qdrant_path: "data/vectordb"
+  # 指向消融实验中 sentence 策略对应的 collection
+  # 若未运行过消融实验，请将此处改为目标 collection 名称并重新入库
+  collection_name: "exp_497d0d8821b9"
+
+# --- RAG 切片配置 ---
+rag:
+  # sentence 切片：基于标点符号保持句子完整性，最适合中文语料
+  chunking_strategy: "sentence"
+
+  # 切片尺寸 (与消融实验一致，勿随意更改以免 fingerprint 不匹配)
+  chunk_size_parent: 1024
+  chunk_size_child: 256
+  chunk_overlap: 50
+
+  # 检索参数
+  retrieval_top_k: 50   # 向量初筛数量
+  rerank_top_k: 5       # 重排序后保留数量
+
+# --- 检索管线开关 ---
+retrieval:
+  # 混合检索：dense(语义) + sparse(jieba关键词)，召回率提升显著
+  enable_hybrid: true
+  hybrid_alpha: 0.5     # 0=纯稀疏, 1=纯稠密, 0.5=均衡
+
+  # Auto-Merge：当前无实际效果(需 HierarchicalNodeParser 支撑)，保持默认
+  enable_auto_merge: true
+
+  # 重排序 (DashScope GTE Rerank)：精排阶段，MRR 提升最为显著
+  enable_rerank: true

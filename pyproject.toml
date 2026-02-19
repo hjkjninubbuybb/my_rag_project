@@ -1,9 +1,9 @@
 [tool.poetry]
 name = "my-rag-project"
 version = "0.1.0"
-description = "Enterprise RAG with LlamaIndex and LangGraph (BGE-M3 Enhanced)"
+description = "Enterprise RAG with LlamaIndex and LangGraph"
 authors = ["Your Name <your@email.com>"]
-packages = [{include = "app", from = "src"}]
+packages = [{include = "rag", from = "src"}]
 
 [tool.poetry.dependencies]
 python = ">=3.11,<3.12"
@@ -17,7 +17,7 @@ llama-index-llms-dashscope = ">=0.2.0"
 llama-index-embeddings-dashscope = ">=0.2.0"
 llama-index-postprocessor-dashscope-rerank = ">=0.2.0"
 
-# --- OpenAI 兼容层 (用于 factory.py) ---
+# --- OpenAI 兼容层 ---
 llama-index-embeddings-openai = ">=0.2.0"
 
 # --- 向量数据库 ---
@@ -31,9 +31,8 @@ pypdf = "^6.0.0"
 # 👇 [新增] 解析 .docx 文件的轻量级库，防止加载器初始化卡顿
 docx2txt = "^0.8"
 
-# --- [核心修改] 稀疏向量生成 ---
-# 移除 fastembed, 换成 FlagEmbedding (BGE-M3)
-FlagEmbedding = "^1.3.0"
+# --- 稀疏向量生成 (jieba 中文分词 + 哈希稀疏向量) ---
+jieba = "^0.42.0"
 
 # --- 核心框架 ---
 langgraph = "^0.2.0"
@@ -49,13 +48,15 @@ langchain-openai = "^0.1.0"
 gradio = "^5.0.0"
 python-dotenv = "^1.0.0"
 loguru = "^0.7.0"
-transformers = ">=4.40.0,<4.47.0"
+transformers = ">=4.40.0"
 typer = "^0.21.1"
 fastapi = "^0.128.6"
 uvicorn = "^0.40.0"
 httpx = "^0.28.1"
-modelscope = "^1.34.0"
 pyyaml = "^6.0.3"
+pandas = "^2.0.0"
+numpy = "^1.24.0"
+tqdm = "^4.66.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0.0"

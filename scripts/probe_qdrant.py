@@ -1,95 +1,67 @@
 import sys
 import os
-import argparse
 import json
-from typing import List, Optional
-
-# --- 1. 环境与路径设置 ---
-current_dir = os.path.dirname(os.path.abspath(__file__))
-project_root = os.path.dirname(current_dir)
-src_path = os.path.join(project_root, "src")
-sys.path.append(src_path)
-
 from qdrant_client import QdrantClient
-from app.settings import settings
+
+# 1. 强行把 src 目录加入 Python 搜索路径，防止找不到模块
+current_dir = os.getcwd()
+src_path = os.path.join(current_dir, "src")
+if src_path not in sys.path:
+    sys.path.append(src_path)
+
+# 2. 导入配置
+try:
+    from rag.config.settings import settings
+except ImportError as e:
+    print("无法导入 settings，请确保你在项目根目录下运行此脚本。")
+    print(f"   错误详情: {e}")
+    sys.exit(1)
 
 
-def probe_collection(limit: int = 5):
-    print(f"🔍 [Probe] 正在连接 Qdrant...")
-    print(f"   -> 路径: {settings.qdrant_path}")
-    print(f"   -> 集合: {settings.collection_name}")
+def probe():
+    print("-" * 50)
+    print("🕵️‍♂️ [Qdrant 探针] 开始工作...")
+    print(f"📂 数据库路径: {settings.qdrant_path}")
 
+    # 3. 连接数据库
     if not os.path.exists(settings.qdrant_path):
-        print(f"❌ [Error] Qdrant 路径不存在")
+        print("❌ 错误: 数据库文件夹不存在！你确定运行过 Ingest 吗？")
         return
 
     client = QdrantClient(path=settings.qdrant_path)
+    collection_name = "my_rag_collection"
 
-    # 检查集合是否存在
-    collections = client.get_collections().collections
-    exists = any(c.name == settings.collection_name for c in collections)
-
-    if not exists:
-        print(f"❌ [Error] 集合 '{settings.collection_name}' 不存在！")
+    # 4. 检查集合
+    if not client.collection_exists(collection_name):
+        print(f"❌ 错误: 集合 '{collection_name}' 不存在！")
         return
 
-    print(f"✅ [Success] 集合存在，正在采样前 {limit} 条数据...")
-
-    # 获取数据
+    # 5. 抓取第 1 条数据 (Limit=1)
+    print(f"✅ 集合存在，正在提取第 1 条样本数据...")
     records, _ = client.scroll(
-        collection_name=settings.collection_name,
-        limit=limit,
-        with_payload=True,
-        with_vectors=False
+        collection_name=collection_name,
+        limit=1,
+        with_payload=True,  # 必须拿 Payload，这才是存元数据的地方
+        with_vectors=False  # 向量数据是一堆乱码数字，不需要看
     )
 
     if not records:
-        print("⚠️ [Warning] 集合是空的。")
+        print("⚠️ 警告: 集合是空的 (Empty)！")
+        print("   -> 这意味着之前的 Ingest 虽然显示成功，但其实没写进去数据。")
         return
 
-    print(f"\n{'=' * 20} 数据采样 (Deep Debug) {'=' * 20}\n")
-    for i, record in enumerate(records):
-        print(f"📄 [Record #{i + 1}] ID: {record.id}")
-        payload = record.payload
+    # 6. 打印真相
+    point = records[0]
+    payload = point.payload
 
-        if payload:
-            # 1. 打印所有可用的 Key，看看数据藏在哪
-            print(f"   🔑 Keys found: {list(payload.keys())}")
+    print("\n🔍 [真相大白] 数据库里存的数据结构如下：")
+    print("=" * 50)
+    # 使用 json.dumps 格式化打印，方便阅读
+    print(json.dumps(payload, indent=4, ensure_ascii=False))
+    print("=" * 50)
 
-            # 2. 尝试获取元数据
-            print(f"   📂 Source: {payload.get('file_name', 'N/A')}")
-
-            # 3. [核心调试] 寻找文本内容
-            # LlamaIndex 有时会把内容存在 text, 有时在 _node_content, 有时在 page_content
-            content = payload.get('text')
-
-            # 如果 text 为空，尝试解析 _node_content
-            if not content and '_node_content' in payload:
-                print("   ⚠️ 'text' 字段为空，尝试解析 '_node_content'...")
-                try:
-                    node_data = json.loads(payload['_node_content'])
-                    content = node_data.get('text', '')
-                    print("   ✅ 从 '_node_content' 中成功提取文本！")
-                except:
-                    content = "❌ 解析 _node_content 失败"
-
-            # 打印最终提取到的内容
-            if content:
-                preview = content[:100].replace('\n', ' ') + "..." if len(content) > 100 else content
-                print(f"   📝 Content: {preview}")
-            else:
-                print(f"   ❌ Content is EMPTY! Payload dump: {str(payload)[:200]}...")
-
-        print("-" * 50)
+    print("\n👉 请把上面 '=' 之间的 JSON 内容截图或复制发给我！")
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--config", type=str, default=None)
-    parser.add_argument("--limit", type=int, default=5)
-    args = parser.parse_args()
-
-    if args.config:
-        settings.load_experiment_config(args.config)
-
-    probe_collection(limit=args.limit)
+    probe()
