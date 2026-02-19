@@ -1,3 +1,4 @@
+import operator
 from typing import Annotated, Any, List, TypedDict
 from langgraph.graph import MessagesState
 from langchain_core.messages import BaseMessage
@@ -26,6 +27,9 @@ class State(MessagesState):
     # 使用 Annotated 定义 Reducer，实现 Map-Reduce 的结果收集
     agent_answers: Annotated[list[dict], accumulate_or_reset]
 
+    # 检索调试数据：物理分块原文、Score、来源文件
+    debug_retrieved_chunks: Annotated[list[dict], operator.add]
+
 
 class AgentState(MessagesState):
     """
@@ -36,3 +40,4 @@ class AgentState(MessagesState):
     question_index: int
     final_answer: str
     agent_answers: list[dict]
+    debug_retrieved_chunks: list[dict]
