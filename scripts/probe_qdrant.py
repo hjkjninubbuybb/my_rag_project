@@ -11,9 +11,9 @@ if src_path not in sys.path:
 
 # 2. 导入配置
 try:
-    from app.settings import settings
+    from rag.config.settings import settings
 except ImportError as e:
-    print("❌ 无法导入 settings，请确保你在项目根目录下运行此脚本。")
+    print("无法导入 settings，请确保你在项目根目录下运行此脚本。")
     print(f"   错误详情: {e}")
     sys.exit(1)
 
