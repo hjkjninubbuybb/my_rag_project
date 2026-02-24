@@ -1,0 +1,138 @@
+{
+  "file": "1-1 计算机与人工智能学院软件学院2026届本科毕业设计论文指导手册_cleaned.md",
+  "count": 11,
+  "parents": [
+    {
+      "id": "c54a9a50-d4cc-4dad-adb3-1279756f4543",
+      "text": "# 计算机与人工智能学院、软件学院 本科毕业设计（论文）指导手册",
+      "metadata": {
+        "file_path": "D:\\Projects\\my_rag_project\\services\\ingestion\\tests\\datas\\cleaner_test_results\\policy\\1-1 计算机与人工智能学院软件学院2026届本科毕业设计论文指导手册_cleaned.md",
+        "file_name": "1-1 计算机与人工智能学院软件学院2026届本科毕业设计论文指导手册_cleaned.md",
+        "file_size": 19807,
+        "creation_date": "2026-02-24",
+        "last_modified_date": "2026-02-24",
+        "header_path": "/"
+      }
+    },
+    {
+      "id": "5e9c0447-c924-4700-a22d-67ab9d3168b9",
+      "text": "## （2026 届） 2025 年 12 月\n\nI",
+      "metadata": {
+        "file_path": "D:\\Projects\\my_rag_project\\services\\ingestion\\tests\\datas\\cleaner_test_results\\policy\\1-1 计算机与人工智能学院软件学院2026届本科毕业设计论文指导手册_cleaned.md",
+        "file_name": "1-1 计算机与人工智能学院软件学院2026届本科毕业设计论文指导手册_cleaned.md",
+        "file_size": 19807,
+        "creation_date": "2026-02-24",
+        "last_modified_date": "2026-02-24",
+        "header_path": "/计算机与人工智能学院、软件学院 本科毕业设计（论文）指导手册/"
+      }
+    },
+    {
+      "id": "ae0f54a4-e7b5-49fd-a1a1-fce38d6937bf",
+      "text": "### 1 毕业设计（论文）领导小组\n\n为做好 2022 级（ 2026 届）本科毕业设计（论文）工作，进一步规范化管理，巩固教学评估成果，切实掌控毕业设计（论文）工作的整个过程，学院成立毕业设计（论文）领导小组，以规范对毕业设计（论文）各个环节的管理和质量控制。\n\n领导小组成员组成：组 长：宋伟副组长：娄铮铮、牛常勇、酒明远成 员：王剑、田侦、韩英杰、李斌、冯清涛、吴德佩领导小组职责：制定或修订...",
+      "metadata": {
+        "file_path": "D:\\Projects\\my_rag_project\\services\\ingestion\\tests\\datas\\cleaner_test_results\\policy\\1-1 计算机与人工智能学院软件学院2026届本科毕业设计论文指导手册_cleaned.md",
+        "file_name": "1-1 计算机与人工智能学院软件学院2026届本科毕业设计论文指导手册_cleaned.md",
+        "file_size": 19807,
+        "creation_date": "2026-02-24",
+        "last_modified_date": "2026-02-24",
+        "header_path": "/计算机与人工智能学院、软件学院 本科毕业设计（论文）指导手册/（2026 届） 2025 年 12 月/"
+      }
+    },
+    {
+      "id": "610a04cb-206b-4ce7-9a54-a3ce39285628",
+      "text": "### 2 毕业设计（论文）工作进度表",
+      "metadata": {
+        "file_path": "D:\\Projects\\my_rag_project\\services\\ingestion\\tests\\datas\\cleaner_test_results\\policy\\1-1 计算机与人工智能学院软件学院2026届本科毕业设计论文指导手册_cleaned.md",
+        "file_name": "1-1 计算机与人工智能学院软件学院2026届本科毕业设计论文指导手册_cleaned.md",
+        "file_size": 19807,
+        "creation_date": "2026-02-24",
+        "last_modified_date": "2026-02-24",
+        "header_path": "/计算机与人工智能学院、软件学院 本科毕业设计（论文）指导手册/（2026 届） 2025 年 12 月/"
+      }
+    },
+    {
+      "id": "2cdfe9b4-d051-4d52-926c-dd7ba5099230",
+      "text": "##### 2.1 第七学期工作\n\n第十六周（ **2025.12.22-12.26** ） ：启动毕设，审核指导教师资格，做好开课准备；\n\n第十七周 **-** 第十九周（ **2025.12.29-2026.1.16** ） ：师生见面，指导教师发布选题，并在第十九周末提交任务书。",
+      "metadata": {
+        "file_path": "D:\\Projects\\my_rag_project\\services\\ingestion\\tests\\datas\\cleaner_test_results\\policy\\1-1 计算机与人工智能学院软件学院2026届本科毕业设计论文指导手册_cleaned.md",
+        "file_name": "1-1 计算机与人工智能学院软件学院2026届本科毕业设计论文指导手册_cleaned.md",
+        "file_size": 19807,
+        "creation_date": "2026-02-24",
+        "last_modified_date": "2026-02-24",
+        "header_path": "/计算机与人工智能学院、软件学院 本科毕业设计（论文）指导手册/（2026 届） 2025 年 12 月/2 毕业设计（论文）工作进度表/"
+      }
+    },
+    {
+      "id": "1854c01b-804f-4505-b97c-0c2f9e803931",
+      "text": "##### 2.2 第八学期工作\n\n第一周（ **2026.3.2-3.6** ）： 学生开题并提交开题报告，指导教师审核并提交毕业设计（论文）题目，学院统一汇总，同时，审批外出做毕业设计（论文）学生的申请；\n\n第六周 （ **2026.4.6-4.10** ）： 中期检查，学生提交文献综述和中期检查表，指导教师填写评语，检查教师检查学生进度；\n\n第七周（ **2026.4.13-4.17** ）...",
+      "metadata": {
+        "file_path": "D:\\Projects\\my_rag_project\\services\\ingestion\\tests\\datas\\cleaner_test_results\\policy\\1-1 计算机与人工智能学院软件学院2026届本科毕业设计论文指导手册_cleaned.md",
+        "file_name": "1-1 计算机与人工智能学院软件学院2026届本科毕业设计论文指导手册_cleaned.md",
+        "file_size": 19807,
+        "creation_date": "2026-02-24",
+        "last_modified_date": "2026-02-24",
+        "header_path": "/计算机与人工智能学院、软件学院 本科毕业设计（论文）指导手册/（2026 届） 2025 年 12 月/2 毕业设计（论文）工作进度表/"
+      }
+    },
+    {
+      "id": "97af0c7a-568c-44b7-941e-9ad88ae4758c",
+      "text": "### 3 毕业设计（论文）管理办法\n\n毕业设计（论文）是在本科教育阶段达成毕业要求、实现培养目标的重要教学环节。为了切实做好我院毕业设计（论文）工作，努力提高毕业设计（论文）质量，规范毕业设计（论文）工作管理，特制定本办法。",
+      "metadata": {
+        "file_path": "D:\\Projects\\my_rag_project\\services\\ingestion\\tests\\datas\\cleaner_test_results\\policy\\1-1 计算机与人工智能学院软件学院2026届本科毕业设计论文指导手册_cleaned.md",
+        "file_name": "1-1 计算机与人工智能学院软件学院2026届本科毕业设计论文指导手册_cleaned.md",
+        "file_size": 19807,
+        "creation_date": "2026-02-24",
+        "last_modified_date": "2026-02-24",
+        "header_path": "/计算机与人工智能学院、软件学院 本科毕业设计（论文）指导手册/（2026 届） 2025 年 12 月/"
+      }
+    },
+    {
+      "id": "8c180443-3c6b-48ff-8259-97a5f9c4dbd0",
+      "text": "##### 3.1 教学目的与教学要求\n\n3.1.1 教学目的毕业设计（论文）是要求学生运用所学的基本知识、基本理论和基本技能进行综合实践训练，培养其提出问题、分析并解决问题的能力；培养学生进行研究、开发、创作、设计的初步能力，包括选题、文献检索与阅读、开题、方案制订、实验设计与操作、调查研究、信息技术应用以及论文或研发报告撰写等能力；培养学生综合实践能力、创新与创业精神，培养实事求是、虚心好学、...",
+      "metadata": {
+        "file_path": "D:\\Projects\\my_rag_project\\services\\ingestion\\tests\\datas\\cleaner_test_results\\policy\\1-1 计算机与人工智能学院软件学院2026届本科毕业设计论文指导手册_cleaned.md",
+        "file_name": "1-1 计算机与人工智能学院软件学院2026届本科毕业设计论文指导手册_cleaned.md",
+        "file_size": 19807,
+        "creation_date": "2026-02-24",
+        "last_modified_date": "2026-02-24",
+        "header_path": "/计算机与人工智能学院、软件学院 本科毕业设计（论文）指导手册/（2026 届） 2025 年 12 月/3 毕业设计（论文）管理办法/"
+      }
+    },
+    {
+      "id": "16580ed9-69be-4b11-bd92-4c9f49618f58",
+      "text": "##### 3.2 教学组织与教学管理\n\n3.2.1 教学组织管理主体及职责学院成立毕业设计（论文）领导小组，在毕业设计（论文）领导小组领导下，院教学办公室和各专业系主任共同负责毕业设计（论文）的教学组织工作。\n\n1）毕业设计领导小组职责（1）依据各专业培养方案及毕业要求，制定各专业毕业设计（论文）教学标准。对毕业设计（论文）的规格、质量、选题方向、题目难度、文献阅读及综述报告字数、工程设计要求及...",
+      "metadata": {
+        "file_path": "D:\\Projects\\my_rag_project\\services\\ingestion\\tests\\datas\\cleaner_test_results\\policy\\1-1 计算机与人工智能学院软件学院2026届本科毕业设计论文指导手册_cleaned.md",
+        "file_name": "1-1 计算机与人工智能学院软件学院2026届本科毕业设计论文指导手册_cleaned.md",
+        "file_size": 19807,
+        "creation_date": "2026-02-24",
+        "last_modified_date": "2026-02-24",
+        "header_path": "/计算机与人工智能学院、软件学院 本科毕业设计（论文）指导手册/（2026 届） 2025 年 12 月/3 毕业设计（论文）管理办法/"
+      }
+    },
+    {
+      "id": "1eaad997-b70d-4a36-9978-2dd0fa654239",
+      "text": "##### 3.3 质量保证与监控\n\n针对各专业毕业设计（论文）工作，学院毕业设计领导小组从拟题与审题、任务下达与开题、过程管理与指导、论文审查与质量评价、工作总结五个控制点加强质量保证。\n\n3.3.1 拟题与审题1）选题应密切结合本专业培养目标，内容与本专业密切相关，具有相当的先进性、合适的深度和难度。选题要有利于学生得到全面的训练，有利于巩固、深化和扩充所学的知识，有利于培养学生的实践能力与创...",
+      "metadata": {
+        "file_path": "D:\\Projects\\my_rag_project\\services\\ingestion\\tests\\datas\\cleaner_test_results\\policy\\1-1 计算机与人工智能学院软件学院2026届本科毕业设计论文指导手册_cleaned.md",
+        "file_name": "1-1 计算机与人工智能学院软件学院2026届本科毕业设计论文指导手册_cleaned.md",
+        "file_size": 19807,
+        "creation_date": "2026-02-24",
+        "last_modified_date": "2026-02-24",
+        "header_path": "/计算机与人工智能学院、软件学院 本科毕业设计（论文）指导手册/（2026 届） 2025 年 12 月/3 毕业设计（论文）管理办法/"
+      }
+    },
+    {
+      "id": "e4431c0d-3c28-4dce-aaa4-b7054cd66dd2",
+      "text": "##### 3.4 学生守则\n\n1）努力学习、勤于实践、勇于创新，独立保质保量完成毕业设计（论文），不弄虚作假，不抄袭他人成果，否则，毕业设计（论文）[成绩按不及格记。](http://baike.sogou.com/lemma/ShowInnerLink.htm?lemmaId=8996530&ss_c=ssc.citiao.link)2）尊重指导教师，虚心向老师学习，接受指导和检查。\n\n3）遵...",
+      "metadata": {
+        "file_path": "D:\\Projects\\my_rag_project\\services\\ingestion\\tests\\datas\\cleaner_test_results\\policy\\1-1 计算机与人工智能学院软件学院2026届本科毕业设计论文指导手册_cleaned.md",
+        "file_name": "1-1 计算机与人工智能学院软件学院2026届本科毕业设计论文指导手册_cleaned.md",
+        "file_size": 19807,
+        "creation_date": "2026-02-24",
+        "last_modified_date": "2026-02-24",
+        "header_path": "/计算机与人工智能学院、软件学院 本科毕业设计（论文）指导手册/（2026 届） 2025 年 12 月/3 毕业设计（论文）管理办法/"
+      }
+    }
+  ]
+}

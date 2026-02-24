@@ -1,0 +1,54 @@
+{
+  "file": "4-5 论文复制比格式AIGC检测规则_cleaned.md",
+  "count": 4,
+  "parents": [
+    {
+      "id": "b66e5e35-74e0-4959-a111-6970d816103c",
+      "text": "# **论文检测规则提示**\n\n结果的判定与处理：",
+      "metadata": {
+        "file_path": "D:\\Projects\\my_rag_project\\services\\ingestion\\tests\\datas\\cleaner_test_results\\policy\\4-5 论文复制比格式AIGC检测规则_cleaned.md",
+        "file_name": "4-5 论文复制比格式AIGC检测规则_cleaned.md",
+        "file_size": 656,
+        "creation_date": "2026-02-24",
+        "last_modified_date": "2026-02-24",
+        "header_path": "/"
+      }
+    },
+    {
+      "id": "65feb6e4-4855-44d3-b29b-62d5d092e952",
+      "text": "## 知网论文查重率:\n\n<15%可以进行院系推优；\n\n<30%代表查重通过；\n\n≥30%系统拦截并标记“不合格”，需修改后重新检测",
+      "metadata": {
+        "file_path": "D:\\Projects\\my_rag_project\\services\\ingestion\\tests\\datas\\cleaner_test_results\\policy\\4-5 论文复制比格式AIGC检测规则_cleaned.md",
+        "file_name": "4-5 论文复制比格式AIGC检测规则_cleaned.md",
+        "file_size": 656,
+        "creation_date": "2026-02-24",
+        "last_modified_date": "2026-02-24",
+        "header_path": "/**论文检测规则提示**/"
+      }
+    },
+    {
+      "id": "24518c71-4474-4e73-b05f-357fc6407dff",
+      "text": "## 知网AIGC 疑似率:\n\n仅提示，不参与流程判定；≥40%时系统提示“疑似过度依赖AI 生成内容，建议修改”",
+      "metadata": {
+        "file_path": "D:\\Projects\\my_rag_project\\services\\ingestion\\tests\\datas\\cleaner_test_results\\policy\\4-5 论文复制比格式AIGC检测规则_cleaned.md",
+        "file_name": "4-5 论文复制比格式AIGC检测规则_cleaned.md",
+        "file_size": 656,
+        "creation_date": "2026-02-24",
+        "last_modified_date": "2026-02-24",
+        "header_path": "/**论文检测规则提示**/"
+      }
+    },
+    {
+      "id": "b70d817f-a315-4aa5-bacc-a2bfc199b403",
+      "text": "## 论文格式检测结果:\n\n≤2 `‱` 10 分 自动赋分，代表格式检测通过≤4 `‱` 8 分 自动赋分，代表格式检测通过≤6 `‱` 6 分 自动赋分，代表格式检测通过知网论文查重和论文格式检测结果都通过，才可进入下一环节",
+      "metadata": {
+        "file_path": "D:\\Projects\\my_rag_project\\services\\ingestion\\tests\\datas\\cleaner_test_results\\policy\\4-5 论文复制比格式AIGC检测规则_cleaned.md",
+        "file_name": "4-5 论文复制比格式AIGC检测规则_cleaned.md",
+        "file_size": 656,
+        "creation_date": "2026-02-24",
+        "last_modified_date": "2026-02-24",
+        "header_path": "/**论文检测规则提示**/"
+      }
+    }
+  ]
+}

@@ -1,0 +1,501 @@
+{
+  "file": "1-2 本科毕业设计论文选题指导意见_计算机与人工智能学院试行_cleaned.md",
+  "count": 45,
+  "children": [
+    {
+      "id": "f0919c35-6e51-4a3f-9d6f-c3194527b190",
+      "text": "# 计算机与人工智能学院本科毕业设计选题类型说明",
+      "metadata": {
+        "file_name": "1-2 本科毕业设计论文选题指导意见_计算机与人工智能学院试行_cleaned.md",
+        "header_path": "/",
+        "sentence_index": 0,
+        "parent_id": "7d5c84d1-65bc-40d7-bc97-ac833e680a88"
+      },
+      "parent_id": "7d5c84d1-65bc-40d7-bc97-ac833e680a88"
+    },
+    {
+      "id": "d0217bb9-5a3e-4d73-aa8a-c032e7c3c203",
+      "text": "本科毕业设计选题分为 论文类型 与 设计类型 两大类，两类选题均需坚守正确政治方向，符合专业培养目标，确保具备专业性、综合性与实践性，助力实现对学生的系统性能力训练。",
+      "metadata": {
+        "file_name": "1-2 本科毕业设计论文选题指导意见_计算机与人工智能学院试行_cleaned.md",
+        "header_path": "/",
+        "sentence_index": 1,
+        "parent_id": "7d5c84d1-65bc-40d7-bc97-ac833e680a88"
+      },
+      "parent_id": "7d5c84d1-65bc-40d7-bc97-ac833e680a88"
+    },
+    {
+      "id": "ebac40e0-8db2-42f3-86f9-3538c1a4cde2",
+      "text": "# 一、论文类型选题",
+      "metadata": {
+        "file_name": "1-2 本科毕业设计论文选题指导意见_计算机与人工智能学院试行_cleaned.md",
+        "header_path": "/",
+        "sentence_index": 0,
+        "parent_id": "d47103e5-3dbd-422a-b38f-a54efbafd7f9"
+      },
+      "parent_id": "d47103e5-3dbd-422a-b38f-a54efbafd7f9"
+    },
+    {
+      "id": "acbfc7c9-6c7a-4257-b7a3-cf6ff1658ce6",
+      "text": "论文类型选题以理论研究与算法探索为核心，聚焦计算机与人工智能领域的学术性、技术性问题，严格遵循“一人一题、独立完成”原则，严禁综述类课题，杜绝题目过于宽泛或狭窄。",
+      "metadata": {
+        "file_name": "1-2 本科毕业设计论文选题指导意见_计算机与人工智能学院试行_cleaned.md",
+        "header_path": "/",
+        "sentence_index": 1,
+        "parent_id": "d47103e5-3dbd-422a-b38f-a54efbafd7f9"
+      },
+      "parent_id": "d47103e5-3dbd-422a-b38f-a54efbafd7f9"
+    },
+    {
+      "id": "a20e2a68-307d-44d5-96a3-77a3d75855f7",
+      "text": "选题需紧密结合指导教师科研背景、在研项目，或对接学科前沿理论与行业技术瓶颈，或基于企业/科研机构的“真题”，体现一定的学术深度与创新性，符合专业培养对理论分析能力的要求。",
+      "metadata": {
+        "file_name": "1-2 本科毕业设计论文选题指导意见_计算机与人工智能学院试行_cleaned.md",
+        "header_path": "/",
+        "sentence_index": 2,
+        "parent_id": "d47103e5-3dbd-422a-b38f-a54efbafd7f9"
+      },
+      "parent_id": "d47103e5-3dbd-422a-b38f-a54efbafd7f9"
+    },
+    {
+      "id": "9d769682-0144-4cb3-8c9c-ddfb17840085",
+      "text": "该类型侧重引导学生开展算法设计、模型构建、理论推导、实验验证及结果分析等工作，要求学生整合专业基础理论与学术研究方法，完成从文献调研、课题论证、方案设计到实验实施、结论凝练的全流程训练。",
+      "metadata": {
+        "file_name": "1-2 本科毕业设计论文选题指导意见_计算机与人工智能学院试行_cleaned.md",
+        "header_path": "/",
+        "sentence_index": 3,
+        "parent_id": "d47103e5-3dbd-422a-b38f-a54efbafd7f9"
+      },
+      "parent_id": "d47103e5-3dbd-422a-b38f-a54efbafd7f9"
+    },
+    {
+      "id": "ad8d56a2-19f8-402f-af65-ceb397bc03b7",
+      "text": "选题需服务于学科发展或行业技术升级需求，可跨学科融合，鼓励与科研院所联合拟定，通过系统性研究切实提升学生的理论思辨、学术写作及科研创新能力，最终形成兼具学术性与参考价值的毕业论文。",
+      "metadata": {
+        "file_name": "1-2 本科毕业设计论文选题指导意见_计算机与人工智能学院试行_cleaned.md",
+        "header_path": "/",
+        "sentence_index": 4,
+        "parent_id": "d47103e5-3dbd-422a-b38f-a54efbafd7f9"
+      },
+      "parent_id": "d47103e5-3dbd-422a-b38f-a54efbafd7f9"
+    },
+    {
+      "id": "d6eb369f-2ffc-4423-86a2-05ca8ca17ac9",
+      "text": "# 二、设计类型选题",
+      "metadata": {
+        "file_name": "1-2 本科毕业设计论文选题指导意见_计算机与人工智能学院试行_cleaned.md",
+        "header_path": "/",
+        "sentence_index": 0,
+        "parent_id": "4beda86f-1e74-4c08-acf5-5c03c6520b95"
+      },
+      "parent_id": "4beda86f-1e74-4c08-acf5-5c03c6520b95"
+    },
+    {
+      "id": "1d431301-321c-48ea-a8b3-c4a7105740bc",
+      "text": "设计类型选题以工程实践与系统实现为核心，紧扣生产、科研、管理等实际需求，突出技术应用性与综合性，优先鼓励以产业需求为导向，与企事业单位联合拟定真实项目类题目，实现“真题真做”。",
+      "metadata": {
+        "file_name": "1-2 本科毕业设计论文选题指导意见_计算机与人工智能学院试行_cleaned.md",
+        "header_path": "/",
+        "sentence_index": 1,
+        "parent_id": "4beda86f-1e74-4c08-acf5-5c03c6520b95"
+      },
+      "parent_id": "4beda86f-1e74-4c08-acf5-5c03c6520b95"
+    },
+    {
+      "id": "d2807b2a-480e-468e-ac5d-c0c8df3a033b",
+      "text": "选题需明确技术路线与实现目标，避免空泛化，若涉及多人协作课题，必须清晰界定每名学生独立完成的任务模块，严格控制团队合作选题数量。",
+      "metadata": {
+        "file_name": "1-2 本科毕业设计论文选题指导意见_计算机与人工智能学院试行_cleaned.md",
+        "header_path": "/",
+        "sentence_index": 2,
+        "parent_id": "4beda86f-1e74-4c08-acf5-5c03c6520b95"
+      },
+      "parent_id": "4beda86f-1e74-4c08-acf5-5c03c6520b95"
+    },
+    {
+      "id": "31024bc5-a1e5-4ffe-802e-74bf40ec02d6",
+      "text": "该类型侧重引导学生完成完整系统的设计、开发、测试与优化工作，涵盖需求分析、架构设计、代码编写、功能调试、性能评估等全流程工程实践。",
+      "metadata": {
+        "file_name": "1-2 本科毕业设计论文选题指导意见_计算机与人工智能学院试行_cleaned.md",
+        "header_path": "/",
+        "sentence_index": 3,
+        "parent_id": "4beda86f-1e74-4c08-acf5-5c03c6520b95"
+      },
+      "parent_id": "4beda86f-1e74-4c08-acf5-5c03c6520b95"
+    },
+    {
+      "id": "18f11412-cdd5-4aff-8246-4cb7d1576c13",
+      "text": "选题需体现专业技术的综合应用，适配行业发展需要，可结合大创计划、学科竞赛等自主拟定（经指导教师审核批准），着重培养学生的工程思维、技术落地及问题解决能力。",
+      "metadata": {
+        "file_name": "1-2 本科毕业设计论文选题指导意见_计算机与人工智能学院试行_cleaned.md",
+        "header_path": "/",
+        "sentence_index": 4,
+        "parent_id": "4beda86f-1e74-4c08-acf5-5c03c6520b95"
+      },
+      "parent_id": "4beda86f-1e74-4c08-acf5-5c03c6520b95"
+    },
+    {
+      "id": "c655183b-7083-4efd-ae07-a2dc15b82f3d",
+      "text": "最终成果以系统实体（或可运行原型）形式呈现，确保符合行业技术规范与学院质量要求。",
+      "metadata": {
+        "file_name": "1-2 本科毕业设计论文选题指导意见_计算机与人工智能学院试行_cleaned.md",
+        "header_path": "/",
+        "sentence_index": 5,
+        "parent_id": "4beda86f-1e74-4c08-acf5-5c03c6520b95"
+      },
+      "parent_id": "4beda86f-1e74-4c08-acf5-5c03c6520b95"
+    },
+    {
+      "id": "1b60d3d1-5472-4cd3-a4a6-5e4325b2f42e",
+      "text": "两类选题均需经过指导教师确认、系/教研室审核小组审查、学院专家审定的三级审核流程。",
+      "metadata": {
+        "file_name": "1-2 本科毕业设计论文选题指导意见_计算机与人工智能学院试行_cleaned.md",
+        "header_path": "/",
+        "sentence_index": 6,
+        "parent_id": "4beda86f-1e74-4c08-acf5-5c03c6520b95"
+      },
+      "parent_id": "4beda86f-1e74-4c08-acf5-5c03c6520b95"
+    },
+    {
+      "id": "5abdec74-8620-4319-823a-1f4fe32149ce",
+      "text": "通过差异化选题设计，兼顾理论研究与工程实践，企业/科研机构的“真题”与导师在研横向、纵向课题，实现因材施教，全面提升学生综合素养与就业、深造竞争力。",
+      "metadata": {
+        "file_name": "1-2 本科毕业设计论文选题指导意见_计算机与人工智能学院试行_cleaned.md",
+        "header_path": "/",
+        "sentence_index": 7,
+        "parent_id": "4beda86f-1e74-4c08-acf5-5c03c6520b95"
+      },
+      "parent_id": "4beda86f-1e74-4c08-acf5-5c03c6520b95"
+    },
+    {
+      "id": "3443eb0b-9dcc-49df-aabe-13754951bbc2",
+      "text": "# 计算机与人工智能学院本科毕业设计选题指导意见",
+      "metadata": {
+        "file_name": "1-2 本科毕业设计论文选题指导意见_计算机与人工智能学院试行_cleaned.md",
+        "header_path": "/",
+        "sentence_index": 0,
+        "parent_id": "ba071e48-d639-4372-a0fc-8f3991fa64ce"
+      },
+      "parent_id": "ba071e48-d639-4372-a0fc-8f3991fa64ce"
+    },
+    {
+      "id": "437ece13-79ed-4dd8-9b6b-3a83fcbb6f75",
+      "text": "毕业设计（论文）是本科人才培养的重要教学环节，是实现教学、科研与社会实践相结合的关键点，对提高学生的综合能力和全面素质具有重要意义。",
+      "metadata": {
+        "file_name": "1-2 本科毕业设计论文选题指导意见_计算机与人工智能学院试行_cleaned.md",
+        "header_path": "/",
+        "sentence_index": 1,
+        "parent_id": "ba071e48-d639-4372-a0fc-8f3991fa64ce"
+      },
+      "parent_id": "ba071e48-d639-4372-a0fc-8f3991fa64ce"
+    },
+    {
+      "id": "f77aa32b-e679-4914-b53c-77d3507f4683",
+      "text": "为了进一步规范本科毕业设计（论文）工作，确保本科毕业设计（论文）质量，提高我院毕业论文（设计）质量，现就选题工作提出如下要求。",
+      "metadata": {
+        "file_name": "1-2 本科毕业设计论文选题指导意见_计算机与人工智能学院试行_cleaned.md",
+        "header_path": "/",
+        "sentence_index": 2,
+        "parent_id": "ba071e48-d639-4372-a0fc-8f3991fa64ce"
+      },
+      "parent_id": "ba071e48-d639-4372-a0fc-8f3991fa64ce"
+    },
+    {
+      "id": "86264c8f-7e4c-487a-be41-d62afb4197b0",
+      "text": "毕业论文（设计）的选题要坚定政治方向、价值取向，选题必须符合《中央关于意识形态工作的重大部署和基本要求》的精神和要求，以“加强社会主义核心价值体系建设，积极培育和践行社会主义核心价值观”为主旨，弘扬正...",
+      "metadata": {
+        "file_name": "1-2 本科毕业设计论文选题指导意见_计算机与人工智能学院试行_cleaned.md",
+        "header_path": "/",
+        "sentence_index": 3,
+        "parent_id": "ba071e48-d639-4372-a0fc-8f3991fa64ce"
+      },
+      "parent_id": "ba071e48-d639-4372-a0fc-8f3991fa64ce"
+    },
+    {
+      "id": "cbdb1110-6251-4218-8ae6-d589eb3743be",
+      "text": "# 一、指导教师命题",
+      "metadata": {
+        "file_name": "1-2 本科毕业设计论文选题指导意见_计算机与人工智能学院试行_cleaned.md",
+        "header_path": "/",
+        "sentence_index": 0,
+        "parent_id": "041e5f15-aa51-4a6e-9561-7758193d7e30"
+      },
+      "parent_id": "041e5f15-aa51-4a6e-9561-7758193d7e30"
+    },
+    {
+      "id": "db686120-2b3b-4aa3-8cc6-5e3e4a119476",
+      "text": "1.指导教师应结合自身的科研背景和在研科研项目提前准备毕业设计题目，确保题目数量充足，原则上每位学生应有1-2个备选题目。",
+      "metadata": {
+        "file_name": "1-2 本科毕业设计论文选题指导意见_计算机与人工智能学院试行_cleaned.md",
+        "header_path": "/",
+        "sentence_index": 1,
+        "parent_id": "041e5f15-aa51-4a6e-9561-7758193d7e30"
+      },
+      "parent_id": "041e5f15-aa51-4a6e-9561-7758193d7e30"
+    },
+    {
+      "id": "bc066e28-ef9e-4f05-811c-e2af3b4d468e",
+      "text": "同时，应避免题目过于宽泛或狭窄。",
+      "metadata": {
+        "file_name": "1-2 本科毕业设计论文选题指导意见_计算机与人工智能学院试行_cleaned.md",
+        "header_path": "/",
+        "sentence_index": 2,
+        "parent_id": "041e5f15-aa51-4a6e-9561-7758193d7e30"
+      },
+      "parent_id": "041e5f15-aa51-4a6e-9561-7758193d7e30"
+    },
+    {
+      "id": "e9876ae2-9784-4ef1-a2ea-fa2480e02b70",
+      "text": "综述类课题和涉及国家机密的课题不能作为本科毕业设计（论文）课题 。",
+      "metadata": {
+        "file_name": "1-2 本科毕业设计论文选题指导意见_计算机与人工智能学院试行_cleaned.md",
+        "header_path": "/",
+        "sentence_index": 3,
+        "parent_id": "041e5f15-aa51-4a6e-9561-7758193d7e30"
+      },
+      "parent_id": "041e5f15-aa51-4a6e-9561-7758193d7e30"
+    },
+    {
+      "id": "7dab9464-44f0-410a-9cfa-f8aefa43510a",
+      "text": "如涉及多人共同完成的课题，需明确每名学生独立完成的任务。",
+      "metadata": {
+        "file_name": "1-2 本科毕业设计论文选题指导意见_计算机与人工智能学院试行_cleaned.md",
+        "header_path": "/",
+        "sentence_index": 4,
+        "parent_id": "041e5f15-aa51-4a6e-9561-7758193d7e30"
+      },
+      "parent_id": "041e5f15-aa51-4a6e-9561-7758193d7e30"
+    },
+    {
+      "id": "723631b6-9864-4104-8adf-c1a3cf09a890",
+      "text": "【数量和质量】2.指导教师准备的课题应紧密围绕专业培养目标和毕业要求，体现教学与科学研究、技术开发、经济建设和社会发展紧密结合的原则。",
+      "metadata": {
+        "file_name": "1-2 本科毕业设计论文选题指导意见_计算机与人工智能学院试行_cleaned.md",
+        "header_path": "/",
+        "sentence_index": 5,
+        "parent_id": "041e5f15-aa51-4a6e-9561-7758193d7e30"
+      },
+      "parent_id": "041e5f15-aa51-4a6e-9561-7758193d7e30"
+    },
+    {
+      "id": "0e658ea8-c58e-40a2-a3de-933cd57f8b80",
+      "text": "同时，充分结合实践，突出创新，能够适应生产或行业发展需要，能够更好地服务国家、区域经济建设和发展。",
+      "metadata": {
+        "file_name": "1-2 本科毕业设计论文选题指导意见_计算机与人工智能学院试行_cleaned.md",
+        "header_path": "/",
+        "sentence_index": 6,
+        "parent_id": "041e5f15-aa51-4a6e-9561-7758193d7e30"
+      },
+      "parent_id": "041e5f15-aa51-4a6e-9561-7758193d7e30"
+    },
+    {
+      "id": "ba8adc10-127d-45c5-ac9f-1f0e771c3133",
+      "text": "鼓励以产业需求为导向，与科研院所、企事业单位等联合拟定毕业设计题目；",
+      "metadata": {
+        "file_name": "1-2 本科毕业设计论文选题指导意见_计算机与人工智能学院试行_cleaned.md",
+        "header_path": "/",
+        "sentence_index": 7,
+        "parent_id": "041e5f15-aa51-4a6e-9561-7758193d7e30"
+      },
+      "parent_id": "041e5f15-aa51-4a6e-9561-7758193d7e30"
+    },
+    {
+      "id": "cbd03547-fdd1-4912-a8c2-61372bea91e9",
+      "text": "鼓励不同专业或不同学科之间的相互结合和交叉。",
+      "metadata": {
+        "file_name": "1-2 本科毕业设计论文选题指导意见_计算机与人工智能学院试行_cleaned.md",
+        "header_path": "/",
+        "sentence_index": 8,
+        "parent_id": "041e5f15-aa51-4a6e-9561-7758193d7e30"
+      },
+      "parent_id": "041e5f15-aa51-4a6e-9561-7758193d7e30"
+    },
+    {
+      "id": "284f932d-8174-43aa-a6f7-85c0183cc943",
+      "text": "【选题来源要求】3.题目应体现一定的专业性、学术性、技术性、综合性和创新性，应有利于各类学生水平和能力的发挥与提高，体现因材施教，同时，能够体现对学生能力的系统性和综合性训练。",
+      "metadata": {
+        "file_name": "1-2 本科毕业设计论文选题指导意见_计算机与人工智能学院试行_cleaned.md",
+        "header_path": "/",
+        "sentence_index": 9,
+        "parent_id": "041e5f15-aa51-4a6e-9561-7758193d7e30"
+      },
+      "parent_id": "041e5f15-aa51-4a6e-9561-7758193d7e30"
+    },
+    {
+      "id": "46d829b1-d47a-4e11-97f7-6c5f1364f6e4",
+      "text": "# 二、学生选题",
+      "metadata": {
+        "file_name": "1-2 本科毕业设计论文选题指导意见_计算机与人工智能学院试行_cleaned.md",
+        "header_path": "/",
+        "sentence_index": 0,
+        "parent_id": "4373ed7a-b97a-4d66-81e3-4e3e44f8ca5a"
+      },
+      "parent_id": "4373ed7a-b97a-4d66-81e3-4e3e44f8ca5a"
+    },
+    {
+      "id": "69a70d52-0122-4b4d-8e7f-eb7180434dc6",
+      "text": "学生应优先在指导老师给定的课题中选择毕业设计题目，也可结合自身兴趣和实际情况、或者结合大创计划、各类学科竞赛等自主选题。",
+      "metadata": {
+        "file_name": "1-2 本科毕业设计论文选题指导意见_计算机与人工智能学院试行_cleaned.md",
+        "header_path": "/",
+        "sentence_index": 1,
+        "parent_id": "4373ed7a-b97a-4d66-81e3-4e3e44f8ca5a"
+      },
+      "parent_id": "4373ed7a-b97a-4d66-81e3-4e3e44f8ca5a"
+    },
+    {
+      "id": "03d5fc62-8fc8-4f49-8618-fac8eba12430",
+      "text": "自主选题需经过指导老师审核并批准。",
+      "metadata": {
+        "file_name": "1-2 本科毕业设计论文选题指导意见_计算机与人工智能学院试行_cleaned.md",
+        "header_path": "/",
+        "sentence_index": 2,
+        "parent_id": "4373ed7a-b97a-4d66-81e3-4e3e44f8ca5a"
+      },
+      "parent_id": "4373ed7a-b97a-4d66-81e3-4e3e44f8ca5a"
+    },
+    {
+      "id": "d9273b54-a543-4efa-8a38-ae10b0daf4a5",
+      "text": "选题原则上遵循一人一题、独立完成原则。",
+      "metadata": {
+        "file_name": "1-2 本科毕业设计论文选题指导意见_计算机与人工智能学院试行_cleaned.md",
+        "header_path": "/",
+        "sentence_index": 3,
+        "parent_id": "4373ed7a-b97a-4d66-81e3-4e3e44f8ca5a"
+      },
+      "parent_id": "4373ed7a-b97a-4d66-81e3-4e3e44f8ca5a"
+    },
+    {
+      "id": "125a0ede-5fe3-40bc-a6c3-c37400307a7c",
+      "text": "选题一经确定，不得随意变更，如确需变更，经指导教师同意后，报学院主管领导批准后方可执行。",
+      "metadata": {
+        "file_name": "1-2 本科毕业设计论文选题指导意见_计算机与人工智能学院试行_cleaned.md",
+        "header_path": "/",
+        "sentence_index": 4,
+        "parent_id": "4373ed7a-b97a-4d66-81e3-4e3e44f8ca5a"
+      },
+      "parent_id": "4373ed7a-b97a-4d66-81e3-4e3e44f8ca5a"
+    },
+    {
+      "id": "461cc162-1ef1-4a34-a6ca-9c8aaa197dba",
+      "text": "学生应在教学计划规定时间内，在指导教师的指导下，通过自身努力保质保量地完成毕业设计（论文）。",
+      "metadata": {
+        "file_name": "1-2 本科毕业设计论文选题指导意见_计算机与人工智能学院试行_cleaned.md",
+        "header_path": "/",
+        "sentence_index": 5,
+        "parent_id": "4373ed7a-b97a-4d66-81e3-4e3e44f8ca5a"
+      },
+      "parent_id": "4373ed7a-b97a-4d66-81e3-4e3e44f8ca5a"
+    },
+    {
+      "id": "09a4e31a-16e3-4310-a741-4f53b63dccc3",
+      "text": "# 计算机与人工智能学院本科毕业设计选题监督制度",
+      "metadata": {
+        "file_name": "1-2 本科毕业设计论文选题指导意见_计算机与人工智能学院试行_cleaned.md",
+        "header_path": "/",
+        "sentence_index": 0,
+        "parent_id": "b34db6d1-ea89-4744-a9ea-b6b7dcba9330"
+      },
+      "parent_id": "b34db6d1-ea89-4744-a9ea-b6b7dcba9330"
+    },
+    {
+      "id": "45e0487b-df26-4e72-9f61-6556272715e2",
+      "text": "为从源头保障毕业设计（论文）的教学质量，特制定如下的毕业设计选题监督机制。",
+      "metadata": {
+        "file_name": "1-2 本科毕业设计论文选题指导意见_计算机与人工智能学院试行_cleaned.md",
+        "header_path": "/",
+        "sentence_index": 1,
+        "parent_id": "b34db6d1-ea89-4744-a9ea-b6b7dcba9330"
+      },
+      "parent_id": "b34db6d1-ea89-4744-a9ea-b6b7dcba9330"
+    },
+    {
+      "id": "33b10181-4e07-44b4-b159-8bce0aaf9677",
+      "text": "1. 题目应多样化，紧密围绕本专业的培养目标，结合生产、科研和管理等实际问题，强化学生的系统性和综合性训练。",
+      "metadata": {
+        "file_name": "1-2 本科毕业设计论文选题指导意见_计算机与人工智能学院试行_cleaned.md",
+        "header_path": "/",
+        "sentence_index": 2,
+        "parent_id": "b34db6d1-ea89-4744-a9ea-b6b7dcba9330"
+      },
+      "parent_id": "b34db6d1-ea89-4744-a9ea-b6b7dcba9330"
+    },
+    {
+      "id": "c9bc370a-0dfc-44d2-bf19-7147ceb2e8a4",
+      "text": "2. 严格控制团队合作完成同一选题数量。",
+      "metadata": {
+        "file_name": "1-2 本科毕业设计论文选题指导意见_计算机与人工智能学院试行_cleaned.md",
+        "header_path": "/",
+        "sentence_index": 3,
+        "parent_id": "b34db6d1-ea89-4744-a9ea-b6b7dcba9330"
+      },
+      "parent_id": "b34db6d1-ea89-4744-a9ea-b6b7dcba9330"
+    },
+    {
+      "id": "015523b0-d703-4640-8cca-d1447a36c2a1",
+      "text": "3. 题目需经三级审核，即指导教师和学生确定选题，填写 本科毕业设计（论文）选题在线汇总表；",
+      "metadata": {
+        "file_name": "1-2 本科毕业设计论文选题指导意见_计算机与人工智能学院试行_cleaned.md",
+        "header_path": "/",
+        "sentence_index": 4,
+        "parent_id": "b34db6d1-ea89-4744-a9ea-b6b7dcba9330"
+      },
+      "parent_id": "b34db6d1-ea89-4744-a9ea-b6b7dcba9330"
+    },
+    {
+      "id": "af2b8b77-5a85-41a3-bb5e-19b7ce15ead3",
+      "text": "各系/教研室组建选题质量审核小组，根据专业培养目标和选题要求，审查选题，质量审核小组审核通过后，提交学院审定；",
+      "metadata": {
+        "file_name": "1-2 本科毕业设计论文选题指导意见_计算机与人工智能学院试行_cleaned.md",
+        "header_path": "/",
+        "sentence_index": 5,
+        "parent_id": "b34db6d1-ea89-4744-a9ea-b6b7dcba9330"
+      },
+      "parent_id": "b34db6d1-ea89-4744-a9ea-b6b7dcba9330"
+    },
+    {
+      "id": "8918c0eb-04cd-4be9-ac11-22632677790b",
+      "text": "学院组织教学指导委员会、教学督导委员会专家、校外企业专家对各专业提交的毕业设计（论文）选题进行审定。",
+      "metadata": {
+        "file_name": "1-2 本科毕业设计论文选题指导意见_计算机与人工智能学院试行_cleaned.md",
+        "header_path": "/",
+        "sentence_index": 6,
+        "parent_id": "b34db6d1-ea89-4744-a9ea-b6b7dcba9330"
+      },
+      "parent_id": "b34db6d1-ea89-4744-a9ea-b6b7dcba9330"
+    },
+    {
+      "id": "dd9833f3-4d67-49a6-8655-158d4db7c024",
+      "text": "4. 严格控制选题变更率（不超过10%），并做好记录存档。",
+      "metadata": {
+        "file_name": "1-2 本科毕业设计论文选题指导意见_计算机与人工智能学院试行_cleaned.md",
+        "header_path": "/",
+        "sentence_index": 7,
+        "parent_id": "b34db6d1-ea89-4744-a9ea-b6b7dcba9330"
+      },
+      "parent_id": "b34db6d1-ea89-4744-a9ea-b6b7dcba9330"
+    },
+    {
+      "id": "8fcfe2a2-578d-49b9-a371-217ad75e5d93",
+      "text": "# 5. 加强对毕业设计（论文）选题的审核，采取逐题审核、逐",
+      "metadata": {
+        "file_name": "1-2 本科毕业设计论文选题指导意见_计算机与人工智能学院试行_cleaned.md",
+        "header_path": "/",
+        "sentence_index": 0,
+        "parent_id": "ededee98-cdc4-4b01-aeb7-e06c161b0ee1"
+      },
+      "parent_id": "ededee98-cdc4-4b01-aeb7-e06c161b0ee1"
+    },
+    {
+      "id": "d4743750-8da8-4e49-b051-c2cd358348cb",
+      "text": "题修改、逐题凝练、逐题过关的形式，务必在规定时间内完成选题工作，确保选题质量。",
+      "metadata": {
+        "file_name": "1-2 本科毕业设计论文选题指导意见_计算机与人工智能学院试行_cleaned.md",
+        "header_path": "/",
+        "sentence_index": 1,
+        "parent_id": "ededee98-cdc4-4b01-aeb7-e06c161b0ee1"
+      },
+      "parent_id": "ededee98-cdc4-4b01-aeb7-e06c161b0ee1"
+    }
+  ]
+}

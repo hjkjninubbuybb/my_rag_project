@@ -1,0 +1,54 @@
+{
+  "file": "0-3 计算机类毕业设计基础要求_cleaned.md",
+  "count": 4,
+  "parents": [
+    {
+      "id": "dc96aae2-d0b1-42a3-b188-dab8d6d00f49",
+      "text": "# **计算机类毕业设计基础要求**\n\n本要求为计算机类专业毕业设计的统一基准规范，旨在保障课题可行性与成果质量，所有选题及执行过程需严格遵循。",
+      "metadata": {
+        "file_path": "D:\\Projects\\my_rag_project\\services\\ingestion\\tests\\datas\\cleaner_test_results\\policy\\0-3 计算机类毕业设计基础要求_cleaned.md",
+        "file_name": "0-3 计算机类毕业设计基础要求_cleaned.md",
+        "file_size": 2731,
+        "creation_date": "2026-02-24",
+        "last_modified_date": "2026-02-24",
+        "header_path": "/"
+      }
+    },
+    {
+      "id": "6db68c37-0a6a-4dc9-a395-7a234402c314",
+      "text": "## **一、成果形式要求**\n\n毕业设计需提交“技术成果+文档成果”两类核心材料，具体规范如下：1. **技术成果** ：需提交可独立运行的完整技术成果，拒绝“仅理论设计无实际实现”。根据选题类型区分要求：开发类选题（系统/工具/平台）：提交可编译、可运行的源代码（含详细注释，注释率不低于 30%）、编译运行说明文档、核心功能演示视频（时长 3-5 分钟）；\n\n2. 算法研究类选题：提交可复现的...",
+      "metadata": {
+        "file_path": "D:\\Projects\\my_rag_project\\services\\ingestion\\tests\\datas\\cleaner_test_results\\policy\\0-3 计算机类毕业设计基础要求_cleaned.md",
+        "file_name": "0-3 计算机类毕业设计基础要求_cleaned.md",
+        "file_size": 2731,
+        "creation_date": "2026-02-24",
+        "last_modified_date": "2026-02-24",
+        "header_path": "/**计算机类毕业设计基础要求**/"
+      }
+    },
+    {
+      "id": "a0784466-5568-4cd7-bf32-6242d7e016b8",
+      "text": "## **二、时间约束要求**\n\n毕业设计整体周期为 4-6 个月，选题需满足“阶段可控、周期适配”原则，具体要求：1. 选题需拆解为“需求分析（1-2 周）、方案设计（2-3 周）、开发/研究（8-10 周）、测试优化（2-3 周）、论文撰写（3-4 周）”五个阶段，各阶段任务需在周期内可完成；\n\n2. 禁止选择“超范围宏大课题”，如“通用人工智能对话系统开发”“跨行业大数据平台构建”等需长期资...",
+      "metadata": {
+        "file_path": "D:\\Projects\\my_rag_project\\services\\ingestion\\tests\\datas\\cleaner_test_results\\policy\\0-3 计算机类毕业设计基础要求_cleaned.md",
+        "file_name": "0-3 计算机类毕业设计基础要求_cleaned.md",
+        "file_size": 2731,
+        "creation_date": "2026-02-24",
+        "last_modified_date": "2026-02-24",
+        "header_path": "/**计算机类毕业设计基础要求**/"
+      }
+    },
+    {
+      "id": "820a7c01-313b-4b6c-99ed-8d4d878e95c2",
+      "text": "## **三、可行性核心要求**\n\n选题需充分考量本科生资源可及性与能力适配性，以下情形视为“不可行选题”，不予通过：- 资源不可获取：需专属昂贵硬件（单套成本≥5000 元）、非公开涉密数据或行业专属权限，且无法通过学校实验室、校企合作渠道解决；\n\n- 技术门槛过高：依赖本科生未接触的深度专业技术（如大规模集成电路设计、底层操作系统开发），且无导师全程专项指导；\n\n- 成果不可验证：无法通过实验...",
+      "metadata": {
+        "file_path": "D:\\Projects\\my_rag_project\\services\\ingestion\\tests\\datas\\cleaner_test_results\\policy\\0-3 计算机类毕业设计基础要求_cleaned.md",
+        "file_name": "0-3 计算机类毕业设计基础要求_cleaned.md",
+        "file_size": 2731,
+        "creation_date": "2026-02-24",
+        "last_modified_date": "2026-02-24",
+        "header_path": "/**计算机类毕业设计基础要求**/"
+      }
+    }
+  ]
+}

@@ -1,0 +1,402 @@
+{
+  "file": "1-3 新工科背景下计算机类毕业设计选题基本导向_cleaned.md",
+  "count": 36,
+  "children": [
+    {
+      "id": "74318842-c55c-411c-a6ea-0064f36ce36b",
+      "text": "# **新工科背景下计算机类毕业设计选** **题基本导向**",
+      "metadata": {
+        "file_name": "1-3 新工科背景下计算机类毕业设计选题基本导向_cleaned.md",
+        "header_path": "/",
+        "sentence_index": 0,
+        "parent_id": "71b9cfd4-8dba-4421-abc7-1e2555a6486f"
+      },
+      "parent_id": "71b9cfd4-8dba-4421-abc7-1e2555a6486f"
+    },
+    {
+      "id": "9ba0fccb-83e3-432c-9fa8-59d9ab4cd4fe",
+      "text": "本导向旨在明确新工科建设理念下，计算机类专业毕业设计选题的核心原则与范围边界，为选题推荐、学生择题及教师指导提供统一依据，确保选题兼具学术价值、实践意义与新工科特色。",
+      "metadata": {
+        "file_name": "1-3 新工科背景下计算机类毕业设计选题基本导向_cleaned.md",
+        "header_path": "/",
+        "sentence_index": 1,
+        "parent_id": "71b9cfd4-8dba-4421-abc7-1e2555a6486f"
+      },
+      "parent_id": "71b9cfd4-8dba-4421-abc7-1e2555a6486f"
+    },
+    {
+      "id": "04019b69-211e-4fcd-a07c-666420386467",
+      "text": "## **一、新工科选题核心特色要求**",
+      "metadata": {
+        "file_name": "1-3 新工科背景下计算机类毕业设计选题基本导向_cleaned.md",
+        "header_path": "/**新工科背景下计算机类毕业设计选** **题基本导向**/",
+        "sentence_index": 0,
+        "parent_id": "d1d62093-15a4-4967-b9e4-5cf994c29d07"
+      },
+      "parent_id": "d1d62093-15a4-4967-b9e4-5cf994c29d07"
+    },
+    {
+      "id": "8f3c25df-ad3b-4c9f-ae4f-659b1d649917",
+      "text": "### **1. 强化学科交叉融合**",
+      "metadata": {
+        "file_name": "1-3 新工科背景下计算机类毕业设计选题基本导向_cleaned.md",
+        "header_path": "/**新工科背景下计算机类毕业设计选** **题基本导向**/**一、新工科选题核心特色要求**/",
+        "sentence_index": 0,
+        "parent_id": "4a6a36a4-4ae5-4e3a-a139-be9e2a5a5313"
+      },
+      "parent_id": "4a6a36a4-4ae5-4e3a-a139-be9e2a5a5313"
+    },
+    {
+      "id": "95d46b53-1f60-4008-84c3-b9b04b5c80e1",
+      "text": "优先选择“计算机技术+实体产业/其他学科”的交叉型选题，通过技术赋能解决跨领域实际问题。",
+      "metadata": {
+        "file_name": "1-3 新工科背景下计算机类毕业设计选题基本导向_cleaned.md",
+        "header_path": "/**新工科背景下计算机类毕业设计选** **题基本导向**/**一、新工科选题核心特色要求**/",
+        "sentence_index": 1,
+        "parent_id": "4a6a36a4-4ae5-4e3a-a139-be9e2a5a5313"
+      },
+      "parent_id": "4a6a36a4-4ae5-4e3a-a139-be9e2a5a5313"
+    },
+    {
+      "id": "d506182a-c25f-417a-aa34-3196e5bdda0e",
+      "text": "核心方向包括但不限于：- 计算机+智能制造：如工业设备智能监测、生产流程数字化管控系统设计；",
+      "metadata": {
+        "file_name": "1-3 新工科背景下计算机类毕业设计选题基本导向_cleaned.md",
+        "header_path": "/**新工科背景下计算机类毕业设计选** **题基本导向**/**一、新工科选题核心特色要求**/",
+        "sentence_index": 2,
+        "parent_id": "4a6a36a4-4ae5-4e3a-a139-be9e2a5a5313"
+      },
+      "parent_id": "4a6a36a4-4ae5-4e3a-a139-be9e2a5a5313"
+    },
+    {
+      "id": "c789ead4-fbd8-426a-8d73-daf375bb568a",
+      "text": "- 计算机+生物医药：如医疗数据隐私保护、医学影像辅助诊断工具开发；",
+      "metadata": {
+        "file_name": "1-3 新工科背景下计算机类毕业设计选题基本导向_cleaned.md",
+        "header_path": "/**新工科背景下计算机类毕业设计选** **题基本导向**/**一、新工科选题核心特色要求**/",
+        "sentence_index": 3,
+        "parent_id": "4a6a36a4-4ae5-4e3a-a139-be9e2a5a5313"
+      },
+      "parent_id": "4a6a36a4-4ae5-4e3a-a139-be9e2a5a5313"
+    },
+    {
+      "id": "271178f4-dc08-444f-915a-ac1100fa79e1",
+      "text": "- 计算机+农业/乡村振兴：如农田墒情物联网监测、农产品溯源平台搭建；",
+      "metadata": {
+        "file_name": "1-3 新工科背景下计算机类毕业设计选题基本导向_cleaned.md",
+        "header_path": "/**新工科背景下计算机类毕业设计选** **题基本导向**/**一、新工科选题核心特色要求**/",
+        "sentence_index": 4,
+        "parent_id": "4a6a36a4-4ae5-4e3a-a139-be9e2a5a5313"
+      },
+      "parent_id": "4a6a36a4-4ae5-4e3a-a139-be9e2a5a5313"
+    },
+    {
+      "id": "60b3baa6-8e00-4335-8690-168d0ad59ea3",
+      "text": "- 计算机+公共服务：如智慧交通信号优化、社区安防智能预警系统。",
+      "metadata": {
+        "file_name": "1-3 新工科背景下计算机类毕业设计选题基本导向_cleaned.md",
+        "header_path": "/**新工科背景下计算机类毕业设计选** **题基本导向**/**一、新工科选题核心特色要求**/",
+        "sentence_index": 5,
+        "parent_id": "4a6a36a4-4ae5-4e3a-a139-be9e2a5a5313"
+      },
+      "parent_id": "4a6a36a4-4ae5-4e3a-a139-be9e2a5a5313"
+    },
+    {
+      "id": "146927c6-ecf5-41a4-9d14-fccf10728f2c",
+      "text": "### **2. 聚焦数字化与智能化技术应用**",
+      "metadata": {
+        "file_name": "1-3 新工科背景下计算机类毕业设计选题基本导向_cleaned.md",
+        "header_path": "/**新工科背景下计算机类毕业设计选** **题基本导向**/**一、新工科选题核心特色要求**/",
+        "sentence_index": 0,
+        "parent_id": "ea6d7dc6-d54e-4737-953e-9ce26eeedee3"
+      },
+      "parent_id": "ea6d7dc6-d54e-4737-953e-9ce26eeedee3"
+    },
+    {
+      "id": "42fe74da-e144-48f9-9f5d-dd643bba410b",
+      "text": "选题需立足计算机领域前沿技术，突出数字化转型与智能化升级的核心逻辑，避免过时技术或纯理论推导类选题。",
+      "metadata": {
+        "file_name": "1-3 新工科背景下计算机类毕业设计选题基本导向_cleaned.md",
+        "header_path": "/**新工科背景下计算机类毕业设计选** **题基本导向**/**一、新工科选题核心特色要求**/",
+        "sentence_index": 1,
+        "parent_id": "ea6d7dc6-d54e-4737-953e-9ce26eeedee3"
+      },
+      "parent_id": "ea6d7dc6-d54e-4737-953e-9ce26eeedee3"
+    },
+    {
+      "id": "f4fbbdd6-1784-4923-85b2-e1aa92fff029",
+      "text": "重点技术方向包括：- 人工智能技术：如大模型轻量化应用、机器学习算法优化及行业落地；",
+      "metadata": {
+        "file_name": "1-3 新工科背景下计算机类毕业设计选题基本导向_cleaned.md",
+        "header_path": "/**新工科背景下计算机类毕业设计选** **题基本导向**/**一、新工科选题核心特色要求**/",
+        "sentence_index": 2,
+        "parent_id": "ea6d7dc6-d54e-4737-953e-9ce26eeedee3"
+      },
+      "parent_id": "ea6d7dc6-d54e-4737-953e-9ce26eeedee3"
+    },
+    {
+      "id": "bc69ff9b-7212-42f5-892f-da21e93e3c9f",
+      "text": "- 大数据技术：如数据采集、清洗、分析及可视化系统开发；",
+      "metadata": {
+        "file_name": "1-3 新工科背景下计算机类毕业设计选题基本导向_cleaned.md",
+        "header_path": "/**新工科背景下计算机类毕业设计选** **题基本导向**/**一、新工科选题核心特色要求**/",
+        "sentence_index": 3,
+        "parent_id": "ea6d7dc6-d54e-4737-953e-9ce26eeedee3"
+      },
+      "parent_id": "ea6d7dc6-d54e-4737-953e-9ce26eeedee3"
+    },
+    {
+      "id": "e2c274b0-ff4c-4717-9fc0-5e70de8141c0",
+      "text": "- 物联网与嵌入式技术：如智能终端开发、多设备互联通信方案设计；",
+      "metadata": {
+        "file_name": "1-3 新工科背景下计算机类毕业设计选题基本导向_cleaned.md",
+        "header_path": "/**新工科背景下计算机类毕业设计选** **题基本导向**/**一、新工科选题核心特色要求**/",
+        "sentence_index": 4,
+        "parent_id": "ea6d7dc6-d54e-4737-953e-9ce26eeedee3"
+      },
+      "parent_id": "ea6d7dc6-d54e-4737-953e-9ce26eeedee3"
+    },
+    {
+      "id": "c06d642d-938a-4844-8c81-61aff0480910",
+      "text": "- 网络安全技术：如数据加密、漏洞检测、隐私保护系统构建。",
+      "metadata": {
+        "file_name": "1-3 新工科背景下计算机类毕业设计选题基本导向_cleaned.md",
+        "header_path": "/**新工科背景下计算机类毕业设计选** **题基本导向**/**一、新工科选题核心特色要求**/",
+        "sentence_index": 5,
+        "parent_id": "ea6d7dc6-d54e-4737-953e-9ce26eeedee3"
+      },
+      "parent_id": "ea6d7dc6-d54e-4737-953e-9ce26eeedee3"
+    },
+    {
+      "id": "a1d90b8d-359d-46c6-b2a0-e88b20c8b31f",
+      "text": "### **3. 对接产业实际需求**",
+      "metadata": {
+        "file_name": "1-3 新工科背景下计算机类毕业设计选题基本导向_cleaned.md",
+        "header_path": "/**新工科背景下计算机类毕业设计选** **题基本导向**/**一、新工科选题核心特色要求**/",
+        "sentence_index": 0,
+        "parent_id": "7c3dd4e1-853e-474a-a570-3abe4b5dc4b5"
+      },
+      "parent_id": "7c3dd4e1-853e-474a-a570-3abe4b5dc4b5"
+    },
+    {
+      "id": "f916602d-c8bc-408f-a2e8-94a8623d30ba",
+      "text": "鼓励选题来源于企业实际项目子课题、行业痛点问题或产学研合作项目，确保成果具备“可落地、可验证”的实践价值。",
+      "metadata": {
+        "file_name": "1-3 新工科背景下计算机类毕业设计选题基本导向_cleaned.md",
+        "header_path": "/**新工科背景下计算机类毕业设计选** **题基本导向**/**一、新工科选题核心特色要求**/",
+        "sentence_index": 1,
+        "parent_id": "7c3dd4e1-853e-474a-a570-3abe4b5dc4b5"
+      },
+      "parent_id": "7c3dd4e1-853e-474a-a570-3abe4b5dc4b5"
+    },
+    {
+      "id": "97f6691d-6714-4b76-a944-5a0c4efea2ec",
+      "text": "具体要求：- 避免“无场景的纯技术堆砌”，选题需明确应用场景（如“面向中小电商的客户画像分析系统”而非“通用客户画像系统”）；",
+      "metadata": {
+        "file_name": "1-3 新工科背景下计算机类毕业设计选题基本导向_cleaned.md",
+        "header_path": "/**新工科背景下计算机类毕业设计选** **题基本导向**/**一、新工科选题核心特色要求**/",
+        "sentence_index": 2,
+        "parent_id": "7c3dd4e1-853e-474a-a570-3abe4b5dc4b5"
+      },
+      "parent_id": "7c3dd4e1-853e-474a-a570-3abe4b5dc4b5"
+    },
+    {
+      "id": "bdb1ba06-7362-46b0-a5dc-2b25f222500e",
+      "text": "- 优先选择能获取真实数据、硬件或场景支持的选题，保障毕业设计可顺利推进。",
+      "metadata": {
+        "file_name": "1-3 新工科背景下计算机类毕业设计选题基本导向_cleaned.md",
+        "header_path": "/**新工科背景下计算机类毕业设计选** **题基本导向**/**一、新工科选题核心特色要求**/",
+        "sentence_index": 3,
+        "parent_id": "7c3dd4e1-853e-474a-a570-3abe4b5dc4b5"
+      },
+      "parent_id": "7c3dd4e1-853e-474a-a570-3abe4b5dc4b5"
+    },
+    {
+      "id": "c1349d85-5f8d-4032-a316-61459bd754c4",
+      "text": "## **二、计算机类核心方向范围**",
+      "metadata": {
+        "file_name": "1-3 新工科背景下计算机类毕业设计选题基本导向_cleaned.md",
+        "header_path": "/**新工科背景下计算机类毕业设计选** **题基本导向**/",
+        "sentence_index": 0,
+        "parent_id": "c9e8997e-d8a7-4c68-90a0-da3d32434e95"
+      },
+      "parent_id": "c9e8997e-d8a7-4c68-90a0-da3d32434e95"
+    },
+    {
+      "id": "10250cb6-dd99-44ec-9d71-60dc163cc16d",
+      "text": "选题需严格限定于计算机类专业核心领域，确保与专业培养目标一致，排除与计算机技术无直接关联的纯文科、纯理科或纯工程（非数字化）类方向。",
+      "metadata": {
+        "file_name": "1-3 新工科背景下计算机类毕业设计选题基本导向_cleaned.md",
+        "header_path": "/**新工科背景下计算机类毕业设计选** **题基本导向**/",
+        "sentence_index": 1,
+        "parent_id": "c9e8997e-d8a7-4c68-90a0-da3d32434e95"
+      },
+      "parent_id": "c9e8997e-d8a7-4c68-90a0-da3d32434e95"
+    },
+    {
+      "id": "64c6a90a-5a4e-44e4-99e5-9c8820609ef1",
+      "text": "### **1. 人工智能与智能系统**",
+      "metadata": {
+        "file_name": "1-3 新工科背景下计算机类毕业设计选题基本导向_cleaned.md",
+        "header_path": "/**新工科背景下计算机类毕业设计选** **题基本导向**/**二、计算机类核心方向范围**/",
+        "sentence_index": 0,
+        "parent_id": "27a35c76-33ff-457c-a082-1275fcfe741f"
+      },
+      "parent_id": "27a35c76-33ff-457c-a082-1275fcfe741f"
+    },
+    {
+      "id": "6e110dc7-43d8-4eab-97d8-b10e2c63e351",
+      "text": "典型选题：基于 YOLO 的智能仓储货物识别系统、面向教育领域的答疑大模型轻量化开发、基于机器学习的用户行为预测工具设计。",
+      "metadata": {
+        "file_name": "1-3 新工科背景下计算机类毕业设计选题基本导向_cleaned.md",
+        "header_path": "/**新工科背景下计算机类毕业设计选** **题基本导向**/**二、计算机类核心方向范围**/",
+        "sentence_index": 1,
+        "parent_id": "27a35c76-33ff-457c-a082-1275fcfe741f"
+      },
+      "parent_id": "27a35c76-33ff-457c-a082-1275fcfe741f"
+    },
+    {
+      "id": "4d5e29d3-9d91-4ce2-87e6-2f0d0562fe1b",
+      "text": "### **2. 大数据与数据科学**",
+      "metadata": {
+        "file_name": "1-3 新工科背景下计算机类毕业设计选题基本导向_cleaned.md",
+        "header_path": "/**新工科背景下计算机类毕业设计选** **题基本导向**/**二、计算机类核心方向范围**/",
+        "sentence_index": 0,
+        "parent_id": "30660953-d829-4a51-983d-97f777a764c7"
+      },
+      "parent_id": "30660953-d829-4a51-983d-97f777a764c7"
+    },
+    {
+      "id": "33bc86c6-33fa-4180-bb7f-309bb84fcdae",
+      "text": "典型选题：校园消费数据可视化分析平台、电商评论情感分析系统、工业生产数据异常检测工具开发。",
+      "metadata": {
+        "file_name": "1-3 新工科背景下计算机类毕业设计选题基本导向_cleaned.md",
+        "header_path": "/**新工科背景下计算机类毕业设计选** **题基本导向**/**二、计算机类核心方向范围**/",
+        "sentence_index": 1,
+        "parent_id": "30660953-d829-4a51-983d-97f777a764c7"
+      },
+      "parent_id": "30660953-d829-4a51-983d-97f777a764c7"
+    },
+    {
+      "id": "3737709e-8407-4e14-80db-438c5d32adcb",
+      "text": "### **3. 物联网与嵌入式开发**",
+      "metadata": {
+        "file_name": "1-3 新工科背景下计算机类毕业设计选题基本导向_cleaned.md",
+        "header_path": "/**新工科背景下计算机类毕业设计选** **题基本导向**/**二、计算机类核心方向范围**/",
+        "sentence_index": 0,
+        "parent_id": "c680800b-8a44-4f7c-a80c-20e83e0a2cdd"
+      },
+      "parent_id": "c680800b-8a44-4f7c-a80c-20e83e0a2cdd"
+    },
+    {
+      "id": "48e029d0-1e45-4689-91da-5a90ede60e7c",
+      "text": "典型选题：基于 ESP32 的智能家居控制系统、工业物联网节点数据采集终端设计、智能手环健康数据监测系统开发。",
+      "metadata": {
+        "file_name": "1-3 新工科背景下计算机类毕业设计选题基本导向_cleaned.md",
+        "header_path": "/**新工科背景下计算机类毕业设计选** **题基本导向**/**二、计算机类核心方向范围**/",
+        "sentence_index": 1,
+        "parent_id": "c680800b-8a44-4f7c-a80c-20e83e0a2cdd"
+      },
+      "parent_id": "c680800b-8a44-4f7c-a80c-20e83e0a2cdd"
+    },
+    {
+      "id": "928d36c3-0dc5-4ba6-bc43-a8dc641d9513",
+      "text": "### **4. 网络空间安全**",
+      "metadata": {
+        "file_name": "1-3 新工科背景下计算机类毕业设计选题基本导向_cleaned.md",
+        "header_path": "/**新工科背景下计算机类毕业设计选** **题基本导向**/**二、计算机类核心方向范围**/",
+        "sentence_index": 0,
+        "parent_id": "89c1f6df-f131-44d4-9549-c0ba520ae854"
+      },
+      "parent_id": "89c1f6df-f131-44d4-9549-c0ba520ae854"
+    },
+    {
+      "id": "7a45a5d8-ac70-46d2-8704-e90bc305e556",
+      "text": "典型选题：个人隐私数据加密传输系统设计、校园网漏洞扫描工具开发、基于区块链的数字版权保护方案实现。",
+      "metadata": {
+        "file_name": "1-3 新工科背景下计算机类毕业设计选题基本导向_cleaned.md",
+        "header_path": "/**新工科背景下计算机类毕业设计选** **题基本导向**/**二、计算机类核心方向范围**/",
+        "sentence_index": 1,
+        "parent_id": "89c1f6df-f131-44d4-9549-c0ba520ae854"
+      },
+      "parent_id": "89c1f6df-f131-44d4-9549-c0ba520ae854"
+    },
+    {
+      "id": "f9049ed1-fbdf-42d9-b6a0-1669a4ac971c",
+      "text": "### **5. 软件开发与系统工程**",
+      "metadata": {
+        "file_name": "1-3 新工科背景下计算机类毕业设计选题基本导向_cleaned.md",
+        "header_path": "/**新工科背景下计算机类毕业设计选** **题基本导向**/**二、计算机类核心方向范围**/",
+        "sentence_index": 0,
+        "parent_id": "cee2a5e6-8585-4411-8e1a-3c39c245a2c4"
+      },
+      "parent_id": "cee2a5e6-8585-4411-8e1a-3c39c245a2c4"
+    },
+    {
+      "id": "7876bf43-950b-4d11-9ac3-d0c85458a616",
+      "text": "典型选题：面向小微企业的进销存管理系统、基于前后端分离的校园论坛开发、云原生应用轻量化部署方案设计。",
+      "metadata": {
+        "file_name": "1-3 新工科背景下计算机类毕业设计选题基本导向_cleaned.md",
+        "header_path": "/**新工科背景下计算机类毕业设计选** **题基本导向**/**二、计算机类核心方向范围**/",
+        "sentence_index": 1,
+        "parent_id": "cee2a5e6-8585-4411-8e1a-3c39c245a2c4"
+      },
+      "parent_id": "cee2a5e6-8585-4411-8e1a-3c39c245a2c4"
+    },
+    {
+      "id": "dfb75863-55d9-45ee-8027-4055007c1f5a",
+      "text": "## **三、选题排除范围**",
+      "metadata": {
+        "file_name": "1-3 新工科背景下计算机类毕业设计选题基本导向_cleaned.md",
+        "header_path": "/**新工科背景下计算机类毕业设计选** **题基本导向**/",
+        "sentence_index": 0,
+        "parent_id": "8dece1b5-7580-413d-b92a-bab509a94003"
+      },
+      "parent_id": "8dece1b5-7580-413d-b92a-bab509a94003"
+    },
+    {
+      "id": "95714d7d-4a51-4b55-9c0d-c9811c1f20df",
+      "text": "为确保选题聚焦性，以下方向不纳入计算机类毕业设计推荐范围：- 纯理论研究类：如“某算法的数学证明”、“无实现的技术综述”；",
+      "metadata": {
+        "file_name": "1-3 新工科背景下计算机类毕业设计选题基本导向_cleaned.md",
+        "header_path": "/**新工科背景下计算机类毕业设计选** **题基本导向**/",
+        "sentence_index": 1,
+        "parent_id": "8dece1b5-7580-413d-b92a-bab509a94003"
+      },
+      "parent_id": "8dece1b5-7580-413d-b92a-bab509a94003"
+    },
+    {
+      "id": "f7c91241-7320-4f42-be5c-1db01e4692e2",
+      "text": "- 非数字化工程类：如“机械结构设计”“电气电路搭建”（不含嵌入式控制的纯硬件设计）；",
+      "metadata": {
+        "file_name": "1-3 新工科背景下计算机类毕业设计选题基本导向_cleaned.md",
+        "header_path": "/**新工科背景下计算机类毕业设计选** **题基本导向**/",
+        "sentence_index": 2,
+        "parent_id": "8dece1b5-7580-413d-b92a-bab509a94003"
+      },
+      "parent_id": "8dece1b5-7580-413d-b92a-bab509a94003"
+    },
+    {
+      "id": "1ad9d038-31dc-4577-9989-eeb281ec4603",
+      "text": "- 纯文科或管理类：如“计算机行业发展现状分析”“软件项目管理流程研究”（无系统开发或技术实现内容）；",
+      "metadata": {
+        "file_name": "1-3 新工科背景下计算机类毕业设计选题基本导向_cleaned.md",
+        "header_path": "/**新工科背景下计算机类毕业设计选** **题基本导向**/",
+        "sentence_index": 3,
+        "parent_id": "8dece1b5-7580-413d-b92a-bab509a94003"
+      },
+      "parent_id": "8dece1b5-7580-413d-b92a-bab509a94003"
+    },
+    {
+      "id": "573aef94-c064-432a-bfb0-968c41e40c8a",
+      "text": "- 过时技术类：如基于传统 ASP 的网站开发、无智能升级的纯静态系统设计。",
+      "metadata": {
+        "file_name": "1-3 新工科背景下计算机类毕业设计选题基本导向_cleaned.md",
+        "header_path": "/**新工科背景下计算机类毕业设计选** **题基本导向**/",
+        "sentence_index": 4,
+        "parent_id": "8dece1b5-7580-413d-b92a-bab509a94003"
+      },
+      "parent_id": "8dece1b5-7580-413d-b92a-bab509a94003"
+    }
+  ]
+}
