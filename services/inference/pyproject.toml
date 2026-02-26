@@ -1,0 +1,57 @@
+[tool.poetry]
+name = "rag-inference"
+version = "0.1.0"
+description = "RAG Inference & Agent Service — 核心问答与 LangGraph Agent 工作流"
+packages = [{include = "app"}]
+
+[tool.poetry.dependencies]
+python = ">=3.11,<3.13"
+rag-shared = {path = "../../shared", develop = true}
+
+# numpy: inference 环境需要 <2.0 (langchain 兼容)
+numpy = "<2.0"
+
+# Web framework
+fastapi = "^0.115"
+uvicorn = "^0.34"
+sse-starlette = "^2.0"
+
+# LangGraph + LangChain (Agent workflow)
+langgraph = ">=0.2"
+langchain = ">=0.2"
+langchain-core = ">=0.2"
+langchain-community = ">=0.2"
+langchain-openai = ">=0.1"
+
+# LlamaIndex (retrieval pipeline)
+llama-index-core = ">=0.12"
+llama-index-llms-dashscope = ">=0.2"
+llama-index-embeddings-openai = ">=0.2"
+llama-index-postprocessor-dashscope-rerank = ">=0.2"
+llama-index-vector-stores-qdrant = ">=0.4"
+
+# Qdrant
+qdrant-client = ">=1.12"
+
+# Sparse vectors
+jieba = ">=0.42"
+
+# Multimodal
+dashscope = "^1.25"
+
+# MySQL (for parent nodes storage)
+sqlalchemy = "^2.0.0"
+pymysql = "^1.1.0"
+mysql-connector-python = "^9.1.0"
+
+# Env
+python-dotenv = "^1.0"
+
+[[tool.poetry.source]]
+name = "aliyun"
+url = "https://mirrors.aliyun.com/pypi/simple/"
+priority = "primary"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
