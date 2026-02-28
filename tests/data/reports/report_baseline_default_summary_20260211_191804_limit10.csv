@@ -1,5 +1,0 @@
-﻿Experiment,Description,Hit_Rate,MRR,NDCG,Latency
-A,纯向量 (Baseline),0.9000,0.4700,0.5803,1640.3 ms
-B,无混合检索 (No Hybrid),0.9000,0.6500,0.7155,1569.8 ms
-C,无重排序 (No Rerank),0.6000,0.3083,0.3886,1324.1 ms
-D,完全体 (Full Pipeline),0.9000,0.6500,0.7155,2009.7 ms
