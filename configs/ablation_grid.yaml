@@ -1,30 +1,37 @@
 # configs/ablation_grid.yaml
-# 消融实验矩阵定义
-# 所有维度的笛卡尔积将作为实验组合
+# 消融实验矩阵 — 按策略分组
 
-# --- 网格维度 (参与笛卡尔积) ---
-grid:
-  # 切片策略
-  chunking_strategies: ["fixed", "recursive", "sentence"]
-  # 子文档块大小
-  chunk_sizes_child: [128, 256, 512]
-  # 重叠窗口
-  chunk_overlaps: [25, 50]
-  # 父文档块大小
-  chunk_sizes_parent: [1024]
+# 每个策略只和自己的参数做笛卡尔积，检索维度共享
+strategies:
+  fixed:
+    chunk_sizes_child: [128, 256, 512]
+    chunk_overlaps: [25, 50]
+  recursive:
+    chunk_sizes_child: [128, 256, 512]
+    chunk_overlaps: [25, 50]
+  sentence:
+    chunk_sizes_child: [128, 256, 512]
+    chunk_overlaps: [25, 50]
+  semantic:
+    breakpoint_thresholds: [80, 90, 95]
+    buffer_sizes: [1, 3]
 
-  # 检索管线开关
+# 检索维度（所有策略共享）
+retrieval:
   enable_hybrid: [true, false]
-  enable_auto_merge: [true, false]
+  enable_auto_merge: [true]
   enable_rerank: [true, false]
 
-  # 模型选择
-  llm_models: ["qwen-plus"]
-  embedding_models: ["text-embedding-v4"]
-  reranker_models: ["gte-rerank"]
+# ===== 新增：RAGAS 评估配置（全局应用）=====
+ragas:
+  enable_evaluation: true  # 消融实验中默认启用
+  metrics: ["context_precision", "context_recall"]
+  llm_provider: "dashscope"
+  llm_model: "qwen-plus"
 
-# --- 固定参数 (不参与笛卡尔积) ---
-fixed:
+# 固定参数
+defaults:
+  chunk_sizes_parent: [1024]
   llm_provider: "dashscope"
   embedding_provider: "dashscope"
   reranker_provider: "dashscope"

@@ -1,0 +1,60 @@
+[tool.poetry]
+name = "indexing-service"
+version = "1.0.0"
+description = "Document indexing and retrieval service for RAG system"
+authors = ["RAG Team"]
+readme = "README.md"
+packages = [{include = "app"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+numpy = ">=2.0"
+fastapi = ">=0.100"
+uvicorn = {extras = ["standard"], version = ">=0.20"}
+pydantic = ">=2.0"
+pydantic-settings = ">=2.0"
+
+# LlamaIndex
+llama-index = ">=0.11"
+llama-index-core = ">=0.11"
+llama-index-embeddings-dashscope = ">=0.2"
+llama-index-llms-dashscope = ">=0.2"
+
+# Document parsing
+pymupdf = ">=1.23"
+pypdf = ">=3.0"
+python-docx = ">=1.0"
+pillow = ">=10.0"
+
+# Chinese NLP
+jieba = ">=0.42"
+
+# Storage
+qdrant-client = ">=1.7"
+minio = ">=7.2"
+pymysql = ">=1.1"
+sqlalchemy = ">=2.0"
+
+# HTTP client (for calling Agent VLM API)
+httpx = ">=0.25"
+
+# Logging
+loguru = ">=0.7"
+
+[tool.poetry.group.dev.dependencies]
+pytest = ">=7.0"
+pytest-asyncio = ">=0.21"
+black = ">=23.0"
+ruff = ">=0.1"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 100
+target-version = ['py310']
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"

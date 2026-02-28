@@ -1,258 +1,240 @@
-# 企业级 Agentic RAG 消融实验平台
+# 企业级多模态 Agentic RAG 微服务平台
 
-基于 **LlamaIndex + LangGraph + Qdrant** 构建的检索增强生成系统，支持全维度消融实验（Ablation Study）。采用 **注册中心 + 抽象基类** 架构，实现切片策略、模型供应商、检索管线的动态插拔与组合实验。
+基于 **LlamaIndex + LangGraph + Qdrant + MySQL** 构建的多模态检索增强生成系统，采用微服务架构。包含数据接入、推理服务、UI 网关三个独立服务，支持全维度消融实验与多模态文档处理（PDF 图文提取、VLM 摘要、角色过滤）。
 
-## 核心特性
+## 架构概览
 
-- **全维度消融实验**：切片策略 x 切片参数 x 混合检索 x 重排序，笛卡尔积自动生成所有实验组合
-- **智能入库**：相同入库指纹（切片+Embedding）的实验共享 Qdrant Collection，避免重复入库
-- **开闭原则**：新增切片策略或模型供应商只需实现接口 + 注册装饰器，无需修改现有代码
-- **中文友好切片**：三种差异化切片策略（固定 Token / 递归分隔符 / 句子边界），均针对中文标点优化
-- **Agent 调试透视**：基于 Tool Artifact 的无侵入式检索数据拦截，前端可获取物理分块原文、Score、来源文件
-- **5-Tab Gradio UI**：实验配置 → 批量运行 → 结果看板 → 交互对话 → 知识库管理
-- **评测指标**：Hit Rate / MRR / NDCG，语义判定 + 子串匹配双重命中检测
+```
+┌─────────────┐     ┌─────────────┐     ┌─────────────┐
+│  Ingestion  │     │  Inference  │     │   Gateway   │
+│  Service    │     │  Service    │     │   Service   │
+│  (Port 8001)│     │  (Port 8002)│     │  (Port 7860)│
+└──────┬──────┘     └──────┬──────┘     └──────┬──────┘
+       │                    │                    │
+       ▼                    ▼                    ▼
+┌───────────────────────┐  ┌────────────────────────────┐
+│   Qdrant (Port 6333)  │  │     MySQL (Port 3306)      │
+│ Vector DB (text+image)│  │ Parent Nodes (images+meta) │
+└───────────────────────┘  └────────────────────────────┘
+```
 
-## 技术栈
+## 快速开始
 
-| 组件 | 技术 |
-|------|------|
-| LLM / Embedding / Reranker | 阿里云 DashScope (Qwen-Plus, text-embedding-v4, GTE-Rerank) |
-| 稀疏向量 | jieba 中文分词 + 哈希稀疏向量 |
-| 向量数据库 | Qdrant (本地模式) |
-| 元数据存储 | SQLite |
-| Agent 工作流 | LangGraph (ReAct + Map-Reduce) |
-| 检索框架 | LlamaIndex |
-| 前端 | Gradio 5.0 |
-| 配置管理 | Pydantic Settings + YAML |
-| 依赖管理 | Poetry |
+### 环境要求
+
+- Python 3.11+
+- Docker & Docker Compose
+- 阿里云 DashScope API Key (Qwen-Plus, text-embedding-v4, Qwen-VL)
+
+### 1. 一键启动 (推荐)
+
+```bash
+# 复制环境变量模板
+cp .env.example .env
+# 编辑 .env，填入 DASHSCOPE_API_KEY
+
+# 启动全部服务
+docker compose up -d
+```
+
+服务地址：
+- Gateway UI: http://localhost:7860
+- Ingestion API: http://localhost:8001
+- Inference API: http://localhost:8002
+- Qdrant Dashboard: http://localhost:6333/dashboard
+- MySQL: localhost:3306 (rag_user/rag_password)
+
+### 2. 本地开发
+
+```bash
+# 安装 shared 库
+cd shared && poetry install
+
+# 安装各服务依赖 (已在上一会话完成)
+cd ../services/ingestion && poetry install
+cd ../inference && poetry install
+cd ../gateway && poetry install
+cd ../../cli && poetry install
+
+# 启动 Qdrant
+docker run -p 6333:6333 qdrant/qdrant
+
+# 启动各服务 (各终端分别运行)
+cd services/ingestion && poetry run python -m app.main
+cd services/inference && poetry run python -m app.main
+cd services/gateway && poetry run python -m app.main
+```
 
 ## 项目结构
 
 ```
 my_rag_project/
-├── configs/                          # 实验配置
-│   ├── default.yaml                  # 默认单实验配置
-│   └── ablation_grid.yaml            # 消融实验矩阵
+├── shared/                          # 共享库 (零重型依赖)
+│   └── rag_shared/
+│       ├── core/types.py            # 抽象基类 (8 types, incl. multimodal)
+│       ├── core/registry.py         # 组件注册中心 (8 component types)
+│       ├── config/experiment.py     # 实验配置 (含多模态字段)
+│       ├── schemas/                 # Pydantic 模型
+│       │   ├── ingestion.py
+│       │   ├── inference.py
+│       │   └── multimodal.py       # 多模态数据模型
+│       └── utils/
+│           ├── logger.py
+│           └── role_mapper.py       # 角色自动提取
 │
-├── src/rag/                          # 主包
-│   ├── main.py                       # 程序入口
-│   ├── config/                       # 配置管理
-│   │   ├── settings.py               # 全局设置 (Pydantic BaseSettings)
-│   │   └── experiment.py             # ExperimentConfig + ExperimentGrid
-│   ├── core/                         # 核心抽象
-│   │   ├── types.py                  # 抽象基类 (BaseChunker, BaseLLMProvider 等)
-│   │   └── registry.py              # ComponentRegistry 注册中心
-│   ├── components/                   # 可插拔组件实现
-│   │   ├── chunkers/                 # fixed / recursive / sentence
-│   │   └── providers/                # dashscope (LLM/Embedding/Reranker) + bgem3
-│   ├── pipeline/                     # 数据处理流水线
-│   │   ├── ingestion.py              # 入库服务 (文件→切片→向量化→Qdrant)
-│   │   └── retrieval.py              # 检索服务 (Hybrid + Rerank + Debug Tool)
-│   ├── storage/                      # 持久化存储
-│   │   ├── vectordb.py               # Qdrant 管理器
-│   │   └── metadata.py               # SQLite 文件元数据
-│   ├── agent/                        # LangGraph 工作流
-│   │   ├── workflow.py               # 主图 + ReAct 子图
-│   │   ├── state.py                  # State / AgentState (含 debug_retrieved_chunks)
-│   │   ├── nodes.py                  # 图节点 (含 ToolMessage artifact 收集)
-│   │   ├── tools.py                  # 工具工厂 (debug-enabled)
-│   │   └── prompts.py                # 系统提示词
-│   ├── experiment/                   # 实验管理
-│   │   ├── runner.py                 # 批量实验执行器
-│   │   └── results.py                # 结果收集与持久化
-│   └── ui/                           # Gradio 界面 (5 Tab)
-│       └── app.py
+├── services/
+│   ├── ingestion/                   # 数据接入服务 (Port 8001)
+│   │   └── app/
+│   │       ├── api/routes.py        # REST API (含 upload-multimodal)
+│   │       ├── services/ingestion.py  # 层级节点处理
+│   │       ├── storage/vectordb.py  # Named Vectors 支持
+│   │       ├── components/
+│   │       │   ├── chunkers/        # fixed, recursive, sentence, semantic, multimodal
+│   │       │   ├── providers/       # dashscope, bgem3, vlm (Qwen-VL)
+│   │       │   └── processors/     # 图片压缩与去重
+│   │       └── parsing/            # PDF/DOCX 解析 + 多模态 PDF 提取
+│   │
+│   ├── inference/                   # 推理服务 (Port 8002)
+│   │   └── app/
+│   │       ├── api/routes.py        # SSE 流式 API
+│   │       ├── agent/               # LangGraph 工作流
+│   │       ├── services/
+│   │       │   ├── retrieval.py     # 文本检索
+│   │       │   └── multimodal_retrieval.py  # 图文检索
+│   │       ├── storage/
+│   │       │   ├── vectordb.py
+│   │       │   └── mysql_client.py  # 父节点查询
+│   │       └── components/providers/  # dashscope, bgem3, qwen_vl_llm
+│   │
+│   └── gateway/                     # UI 网关 (Port 7860)
+│       └── app/
+│           ├── clients/             # HTTP 客户端
+│           └── ui/app.py            # Gradio 界面
 │
-├── scripts/                          # 工具脚本
-│   ├── evaluate_retrieval.py         # 检索评测 (支持单配置/矩阵模式)
-│   ├── diagnose_env.py               # 环境诊断
-│   └── probe_qdrant.py               # Qdrant 数据探查
+├── cli/                             # CLI 评测工具
+│   └── rag_cli/main.py             # rag-eval 命令
 │
-├── tests/
-│   └── data/
-│       └── test_dataset.csv          # 评测数据集
+├── configs/
+│   ├── default.yaml                 # 单实验配置
+│   ├── ablation_grid.yaml           # 消融实验矩阵
+│   └── hierarchical_markdown.yaml   # 层级 Markdown 切分配置
 │
-├── data/                             # 运行时数据 (gitignored)
-│   ├── vectordb/                     # Qdrant 向量数据
-│   ├── metadata.db                   # SQLite 元数据
-│   ├── uploads/temp_batch/           # 文件上传暂存
-│   └── reports/                      # 实验报告
+├── scripts/
+│   └── init_mysql.sql               # MySQL 初始化脚本
 │
-├── resources/                        # 模型权重缓存 (gitignored)
-├── .env                              # 环境变量 (gitignored)
-├── .env.example                      # 环境变量模板
-└── pyproject.toml                    # 依赖管理
+├── data/                            # 运行时数据 (gitignored)
+│   ├── vectordb/                    # Qdrant 数据
+│   ├── mysql/                       # MySQL 数据
+│   ├── metadata.db                  # SQLite 元数据
+│   └── uploads/                     # 文件上传
+│
+├── docs/                            # 文档
+│   └── agent-learning/              # Agent 学习案例
+│
+├── docker-compose.yml               # 容器编排 (含 MySQL)
+├── .env.example                     # 环境变量模板
+├── CLAUDE.md                        # Claude Code 指南
+└── README.md                        # 本文档
 ```
 
-## 快速开始
+## 服务说明
 
-### 1. 安装依赖
+### Ingestion Service (8001)
+
+负责文档解析、切片、向量化、存储。支持多模态 PDF 图文提取与层级节点管理。
+
+**API 端点：**
+- `POST /api/v1/documents/upload` - 上传并入库文件（支持层级节点输出）
+- `POST /api/v1/documents/upload-multimodal` - 上传 PDF 并提取图文对（PyMuPDF）
+- `POST /api/v1/documents/ingest` - 从路径入库
+- `POST /api/v1/batch/ingest` - 批量智能入库
+- `GET /api/v1/collections` - 列出 collections
+- `GET /api/v1/collections/{name}/files` - 列出文件
+- `DELETE /api/v1/documents/{collection}/{filename}` - 删除文档
+
+### Inference Service (8002)
+
+负责查询、LangGraph Agent 推理、SSE 流式输出。支持多模态检索（图文混合搜索）。
+
+**API 端点：**
+- `POST /api/v1/chat/stream` - SSE 流式对话
+- `POST /api/v1/chat/reset` - 重置对话
+- `POST /api/v1/retrieval/search` - 直接检索
+- `POST /api/v1/evaluate/single` - 单配置评测
+
+### Gateway Service (7860)
+
+Gradio UI 界面，通过 HTTP 代理调用后端服务。
+
+## CLI 评测工具
 
 ```bash
-poetry install
-```
+cd cli
 
-### 2. 配置环境变量
+# 单配置评测
+poetry run rag-eval --config ../configs/default.yaml --limit 10
 
-```bash
-cp .env.example .env
-# 编辑 .env，填入阿里云 DashScope API Key
-```
+# 消融矩阵评测
+poetry run rag-eval --grid ../configs/ablation_grid.yaml --limit 10
 
-### 3. 启动系统
-
-```bash
-python src/rag/main.py
-```
-
-浏览器自动打开 `http://127.0.0.1:7860`，通过 Gradio UI 进行操作。
-
-指定配置文件和端口：
-
-```bash
-python src/rag/main.py --config configs/default.yaml --port 8080
+# 批量入库
+poetry run rag-eval --ingest --input-dir ../data/uploads/documents
 ```
 
 ## 切片策略
 
-三种差异化切片策略，均针对中文文本优化：
-
-| 策略 | 实现 | 切分方式 | 适用场景 |
-|------|------|---------|---------|
-| `fixed` | LlamaIndex `TokenTextSplitter` | 按 Token 数硬切，不关心语义边界 | Baseline 对照组 |
-| `recursive` | LangChain `RecursiveCharacterTextSplitter` | 按中文标点层级递归回退：段落→句号→问号→感叹号→分号→逗号→空格→逐字符 | 结构化文档 |
-| `sentence` | LlamaIndex `SentenceSplitter` + 中文正则 | 句子边界感知，增强中文标点（。？！，、；：）识别 | 连续文本 |
-
-## 消融实验
-
-### 通过 UI 操作
-
-1. 在 **知识库管理** Tab 上传文档，点击"确认上传"
-2. 打开 **实验配置** Tab，选择各维度参数，点击"预览组合"
-3. 切换到 **运行实验** Tab，先"智能入库"再"运行评测"
-4. 在 **结果看板** Tab 查看对比表和可视化图表
-
-### 通过命令行
-
-```bash
-# 单配置评测
-python scripts/evaluate_retrieval.py --config configs/default.yaml --limit 10
-
-# 消融矩阵评测（笛卡尔积全组合）
-python scripts/evaluate_retrieval.py --grid configs/ablation_grid.yaml --limit 10
-
-# 默认 4 组检索消融（Baseline / No Hybrid / No Rerank / Full）
-python scripts/evaluate_retrieval.py --limit 10
-```
-
-### 消融矩阵配置示例
-
-编辑 `configs/ablation_grid.yaml`：
-
-```yaml
-grid:
-  chunking_strategies: ["fixed", "recursive", "sentence"]
-  chunk_sizes_child: [128, 256, 512]
-  chunk_overlaps: [25, 50]
-  enable_hybrid: [true, false]
-  enable_auto_merge: [true, false]
-  enable_rerank: [true, false]
-```
-
-以上配置将生成 3 x 3 x 2 x 2 x 2 x 2 = **144** 个实验组合。
-
-### 评测指标
-
-| 指标 | 含义 |
-|------|------|
-| Hit Rate | 命中率，Top-K 结果中是否包含正确答案 |
-| MRR | 平均倒数排名，第一个正确结果的排名倒数 |
-| NDCG@K | 归一化折损累积增益，综合评估排序质量 |
-
-命中检测采用双重机制：子串匹配（快速通道）+ 余弦相似度 > 0.85（语义兜底）。
+| 策略 | 实现 | 描述 |
+|------|------|------|
+| `fixed` | TokenTextSplitter | 按 Token 数硬切 |
+| `recursive` | RecursiveCharacterTextSplitter | 按中文标点层级递归 |
+| `sentence` | SentenceSplitter | 句子边界感知 |
+| `semantic` | SemanticSplitterNodeParser | 基于 Embedding 语义切分 |
+| `multimodal` | MultimodalChunker | 图文对提取，VLM 摘要，层级父子节点 |
 
 ## 扩展指南
 
 ### 添加新的切片策略
 
-```python
-# src/rag/components/chunkers/semantic.py
-from rag.core.registry import ComponentRegistry
-from rag.core.types import BaseChunker
-
-@ComponentRegistry.chunker("semantic")
-class SemanticChunker(BaseChunker):
-    def create_splitter(self, chunk_size, chunk_overlap):
-        # 实现你的语义切片逻辑
-        ...
-```
-
-在 `components/chunkers/__init__.py` 中添加导入，YAML 配置中即可使用 `chunking_strategy: "semantic"`。
+在对应服务的 `components/chunkers/` 目录实现，继承 `BaseChunker`，使用 `@ComponentRegistry.chunker("name")` 注册。
 
 ### 添加新的模型供应商
 
-```python
-# src/rag/components/providers/openai.py
-from rag.core.registry import ComponentRegistry
-from rag.core.types import BaseLLMProvider
+在 `components/providers/` 目录实现 `BaseLLMProvider` / `BaseEmbeddingProvider` / `BaseRerankerProvider` 接口。
 
-@ComponentRegistry.llm_provider("openai")
-class OpenAILLMProvider(BaseLLMProvider):
-    def create_llm(self, model_name, api_key, temperature, **kwargs):
-        # 返回 LlamaIndex LLM（用于检索管线）
-        ...
+## 技术栈
 
-    def create_chat_model(self, model_name, api_key, temperature, **kwargs):
-        # 返回 LangChain ChatModel（用于 Agent 工作流）
-        ...
-```
+| 组件 | 技术 |
+|------|------|
+| LLM / Embedding | 阿里云 DashScope (Qwen-Plus, text-embedding-v4) |
+| VLM (视觉语言模型) | 阿里云 DashScope (Qwen-VL-Max, qwen3-vl-embedding) |
+| 稀疏向量 | jieba 中文分词 + MD5 哈希 |
+| 向量数据库 | Qdrant (Named Vectors: text + image) |
+| 关系数据库 | MySQL 8.0 (父节点 + 图片存储) |
+| Agent 工作流 | LangGraph (ReAct + Map-Reduce) |
+| 检索框架 | LlamaIndex |
+| PDF 图文提取 | PyMuPDF + Pillow |
+| 前端 | Gradio 5.0 |
+| 依赖管理 | Poetry (各服务独立环境) |
 
-YAML 中配置 `llm_provider: "openai"` 即可切换，检索管线和 Agent 工作流自动使用对应供应商。
+## 多模态架构
 
-## 架构设计
+### 层级节点存储
 
-### 检索管线
+多模态文档采用 **父子节点分离存储** 策略：
 
-```
-Query → [Hybrid Search: Dense + jieba Sparse] → [Rerank: GTE] → Top-K
-```
+- **父节点** (Parent) → MySQL：包含完整图片 (base64) + 上下文文本 + 元数据
+- **子节点** (Child) → Qdrant：图片的 VLM 文本摘要，用于向量检索
+- 检索时通过子节点找到父节点，再用 VLM 基于原始图片生成回答
 
-每个环节均可通过 `ExperimentConfig` 独立开关控制，支持任意组合的消融实验。
+### 角色过滤
 
-### Agent 工作流
-
-```
-用户问题 → 对话总结 → 问题分析/拆分 → [并行 ReAct Agent x N] → 聚合回答
-```
-
-- **问题分析**：LLM 判断是否需要将复杂问题拆分为多个子问题，简单问题直通
-- **并行检索**：每个子问题独立执行 ReAct 循环（搜索→分析→回答）
-- **智能聚合**：单问题直接返回（无额外 LLM 开销），多问题 LLM 整合为连贯回答
-- **LLM 解耦**：通过注册中心按 `llm_provider` 动态创建，支持供应商热切换
-
-### Agent 调试数据拦截
-
-```
-Custom Tool (query_engine.query())
-  → 返回 (str_response, debug_chunks) 给 ToolNode
-  → ToolMessage.artifact 存储 debug_chunks
-  → extract_final_answer 收集所有 artifact
-  → State.debug_retrieved_chunks (operator.add Reducer 累加)
-  → graph.ainvoke() 返回值中包含完整检索链路数据
-```
-
-debug_chunks 结构：`[{"text": "...", "score": 0.87, "source_file": "report.pdf"}, ...]`
-
-### 依赖注入
-
-所有服务组件（`IngestionService`、`RetrievalService`、`VectorStoreManager`、`create_graph`）接收 `ExperimentConfig` 参数，不依赖全局单例。同一进程可同时运行多个不同配置的实验。
-
-### 智能入库机制
-
-`ExperimentConfig.ingestion_fingerprint` 由切片参数 + Embedding 模型计算 MD5 得出。相同 fingerprint 的实验共享 Qdrant Collection，仅检索参数不同的实验无需重复入库。
+系统自动从中文文件名提取用户角色（指导老师、学生、评阅专家、答辩组），在检索时按角色过滤内容。
 
 ## 注意事项
 
-- 稀疏向量使用 jieba 中文分词（约 15MB），启动秒级完成，无需下载大模型
-- 旧版 `metadata.db` 如缺少 `collection_name` 字段，需删除后重建
-- 如从旧版（BGE-M3）迁移，需删除 `data/vectordb/` 后重新入库（稀疏向量索引空间不兼容）
+- **numpy 版本隔离**: Ingestion (>=2.0), Inference (<2.0)
+- **共享库**: `shared/rag_shared/` 作为 path dependency 供各服务使用
+- **运行时数据**: 保存在 `data/` 目录 (gitignored)，包含 `vectordb/`、`mysql/`、`metadata.db`、`uploads/`
+- **稀疏向量**: 约 15MB，启动秒级完成
+- **多模态指纹**: `enable_multimodal=True` 时，`ingestion_fingerprint` 包含多模态参数，确保独立集合
+- **MySQL 初始化**: `scripts/init_mysql.sql` 由 Docker Compose 自动执行

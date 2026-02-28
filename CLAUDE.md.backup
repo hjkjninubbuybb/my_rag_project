@@ -1,0 +1,263 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Project Overview
+
+Enterprise-grade **Multimodal Agentic RAG** (Retrieval-Augmented Generation) system with full-dimension ablation experiment support. **Microservices architecture** with 3 services + shared library + CLI tool. Built with LlamaIndex, LangGraph, Qdrant, and MySQL. Uses a **ComponentRegistry + Abstract Base Classes** architecture for extensibility. Supports DashScope (Qwen-Plus, text-embedding-v4, Qwen-VL) for LLM/embeddings/VLM and jieba-based lightweight sparse vectors for hybrid search. Features **hierarchical multimodal document processing** with image-text pair extraction, VLM-based summarization, and role-based access control.
+
+## Commands
+
+```bash
+# ── Docker Compose (推荐，一键启动全部服务) ──
+docker compose up -d
+
+# ── 本地开发 (各服务独立 Poetry 环境，已完成初始化) ──
+
+# 1. 安装 shared 库 (所有服务的公共依赖)
+cd shared && poetry install
+
+# 2. 启动 Qdrant (Docker)
+docker run -p 6333:6333 qdrant/qdrant
+
+# 3. 启动 Ingestion 服务 (Port 8001)
+cd services/ingestion && poetry run python -m app.main
+
+# 4. 启动 Inference 服务 (Port 8002)
+cd services/inference && poetry run python -m app.main
+
+# 5. 启动 Gateway UI (Port 7860)
+cd services/gateway && poetry run python -m app.main
+
+# ── CLI 评测工具 ──
+cd cli && poetry run rag-eval --config ../configs/default.yaml --limit 10
+poetry run rag-eval --grid ../configs/ablation_grid.yaml --limit 10
+poetry run rag-eval --ingest --input-dir ../data/uploads/documents
+```
+
+Requires a `.env` file with `DASHSCOPE_API_KEY` set. See `.env.example` for template.
+
+## Architecture
+
+### Microservices Overview
+
+| Service | Port | Responsibility | Key Dependencies |
+|---------|------|---------------|-----------------|
+| **Ingestion** | 8001 | File parsing, chunking, embedding, Qdrant storage, multimodal PDF extraction | numpy>=2.0, llama-index, fastapi, pymupdf, pillow, sqlalchemy |
+| **Inference** | 8002 | Query, LangGraph agent workflow, SSE streaming, multimodal retrieval | numpy<2.0, langgraph, langchain, fastapi, sqlalchemy |
+| **Gateway** | 7860 | Gradio UI, httpx proxy to backend services | gradio, httpx |
+| **Qdrant** | 6333 | Vector database (text + image named vectors) | Docker container |
+| **MySQL** | 3306 | Parent node storage (images + metadata) | Docker container |
+| **CLI** | — | Batch evaluation & ingestion | httpx, pandas, tqdm |
+
+### Directory Structure
+
+```
+shared/                          # 共享库 (零重型依赖)
+├── pyproject.toml
+└── rag_shared/
+    ├── core/types.py            # ABCs: BaseChunker, BaseLLMProvider, BaseMultimodalEmbeddingProvider,
+    │                            #   BaseMultimodalLLMProvider, BaseImageProcessor, BaseVLMProvider, ImageType
+    ├── core/registry.py         # ComponentRegistry (8 types: chunker, llm, embedding, reranker,
+    │                            #   multimodal_embedding, multimodal_llm, image_processor, vlm)
+    ├── config/experiment.py     # ExperimentConfig + ExperimentGrid (incl. multimodal fields)
+    ├── schemas/ingestion.py     # Pydantic API schemas (Ingestion)
+    ├── schemas/inference.py     # Pydantic API schemas (Inference)
+    ├── schemas/multimodal.py    # ImageData, MultimodalChunk, role-based schemas
+    ├── utils/logger.py          # loguru logger
+    └── utils/role_mapper.py     # Auto-extract user role from Chinese filenames
+
+services/ingestion/              # 数据接入服务 (Port 8001)
+├── pyproject.toml               # numpy>=2.0, llama-index, fastapi, pymupdf, pillow, sqlalchemy
+├── Dockerfile
+└── app/
+    ├── main.py                  # FastAPI + lifespan
+    ├── config.py                # ServiceSettings (pydantic-settings, data partition paths)
+    ├── api/routes.py            # REST API: upload, upload-multimodal, ingest, batch, collections
+    ├── services/ingestion.py    # IngestionService (chunking + embedding + hierarchical nodes)
+    ├── storage/vectordb.py      # VectorStoreManager (URL + local path, named vectors)
+    ├── storage/metadata.py      # DatabaseManager (SQLite)
+    ├── components/chunkers/     # fixed, recursive, sentence, semantic, multimodal
+    ├── components/providers/    # dashscope (Embedding), bgem3 (jieba), vlm (Qwen-VL)
+    ├── components/processors/   # image.py (DefaultImageProcessor: compression, dedup)
+    └── parsing/                 # parser.py (pypdf+docx2txt), multimodal_parser.py (PyMuPDF),
+                                 # cleaner.py (header/footer/TOC removal)
+
+services/inference/              # 推理与 Agent 服务 (Port 8002)
+├── pyproject.toml               # numpy<2.0, langgraph, langchain, sse-starlette, sqlalchemy
+├── Dockerfile
+└── app/
+    ├── main.py                  # FastAPI + lifespan
+    ├── config.py                # ServiceSettings
+    ├── api/routes.py            # SSE streaming chat, retrieval, evaluate
+    ├── agent/                   # LangGraph workflow
+    │   ├── workflow.py          # create_graph(config) — ReAct agent
+    │   ├── state.py             # State + AgentState
+    │   ├── nodes.py             # summarize, rewrite, agent, extract, aggregate
+    │   ├── tools.py             # get_tools(config) → debug LangChain tools
+    │   └── prompts.py           # System prompts
+    ├── services/retrieval.py    # RetrievalService (hybrid/rerank)
+    ├── services/multimodal_retrieval.py  # MultimodalRetrievalService (image vector search)
+    ├── storage/vectordb.py      # VectorStoreManager (read-oriented)
+    ├── storage/mysql_client.py  # MySQLClient (parent node retrieval)
+    └── components/providers/    # dashscope, bgem3, qwen_vl_llm (multimodal LLM)
+
+services/gateway/                # UI 网关 (Port 7860)
+├── pyproject.toml               # gradio, httpx, httpx-sse
+├── Dockerfile
+└── app/
+    ├── main.py                  # Gradio launch
+    ├── config.py                # ServiceSettings (ingestion_url, inference_url)
+    ├── clients/ingestion.py     # httpx client for Ingestion service
+    ├── clients/inference.py     # httpx SSE client for Inference service
+    └── ui/app.py                # Gradio UI (3 tabs, all via HTTP)
+
+cli/                             # 消融实验 CLI
+├── pyproject.toml               # httpx, pandas, tqdm
+└── rag_cli/
+    ├── main.py                  # CLI entry point (rag-eval command)
+    └── clients/                 # Sync httpx clients
+```
+
+### Key Design Patterns
+
+- **ComponentRegistry + Decorators** (`shared/rag_shared/core/registry.py`): Register components with `@ComponentRegistry.chunker("fixed")`. Look up by name at runtime. Each service registers its own components via `__init__.py` imports. Supports 8 component types: `chunker`, `llm_provider`, `embedding_provider`, `reranker_provider`, `multimodal_embedding_provider`, `multimodal_llm_provider`, `image_processor`, `vlm_provider`.
+- **Abstract Base Classes** (`shared/rag_shared/core/types.py`): `BaseChunker`, `BaseLLMProvider`, `BaseEmbeddingProvider`, `BaseRerankerProvider`, `BaseMultimodalEmbeddingProvider`, `BaseMultimodalLLMProvider`, `BaseImageProcessor`, `BaseVLMProvider`. Also defines `ImageType` enum (SCREENSHOT, FLOWCHART, TABLE, DIAGRAM, OTHER).
+- **ExperimentConfig** (`shared/rag_shared/config/experiment.py`): Frozen dataclass with `qdrant_url` + `qdrant_endpoint` property for dual-mode Qdrant access. `ingestion_fingerprint` ensures consistent collection names across services (includes multimodal params when `enable_multimodal=True`). `from_dict()` for API deserialization. New multimodal fields: `enable_multimodal`, `multimodal_embedding_provider`, `multimodal_llm_model`, `image_embedding_dim`, `image_vector_weight`/`text_vector_weight`, `user_role`.
+- **Hierarchical Node Storage**: MultimodalChunker returns `(parent_nodes, child_nodes)` tuple. Parent nodes (with full images) → MySQL. Child nodes (image summary text) → Qdrant for vector search. Ingestion service detects tuples via `isinstance(result, tuple)`.
+- **Named Vectors in Qdrant**: Multimodal collections use named vectors: `text` (dense text embeddings) + `image` (2560-dim Qwen-VL embeddings).
+- **Role-Based Access Control**: `role_mapper.py` auto-extracts roles from Chinese filenames (指导老师→teacher, 学生→student, etc.). Stored in node metadata, enforced during retrieval. `user_role: None` = admin (sees all).
+- **Independent Poetry Environments**: Each service has its own `pyproject.toml`, `poetry.lock`, `.venv/`. `shared/` installed as path dependency: `rag-shared = {path = "../../shared", develop = true}`.
+- **SSE Streaming**: Inference service converts LangGraph `astream_events()` to Server-Sent Events. Gateway proxies SSE to Gradio via `httpx-sse`.
+
+### API Contracts
+
+**Ingestion Service** (`/api/v1/`):
+- `POST /documents/upload` — Multipart file upload + ingest (returns hierarchical stats)
+- `POST /documents/upload-multimodal` — Upload PDF with image extraction (PyMuPDF)
+- `POST /documents/ingest` — Ingest from file paths
+- `POST /batch/ingest` — Smart batch by fingerprint
+- `GET /collections` — List Qdrant collections
+- `GET /collections/{name}/files` — List files in collection
+- `DELETE /documents/{collection}/{filename}` — Delete document
+
+**Inference Service** (`/api/v1/`):
+- `POST /chat/stream` — SSE streaming chat (events: token, rewrite, chunks, done, error)
+- `POST /chat/reset` — Reset thread
+- `POST /retrieval/search` — Direct retrieval
+- `POST /evaluate/single` — Single-config evaluation
+
+### Chunking Strategies (Chinese-Optimized)
+
+| Strategy | Implementation | Behavior |
+|----------|---------------|----------|
+| `fixed` | `TokenTextSplitter` | Hard cut by token count. Baseline. |
+| `recursive` | LangChain `RecursiveCharacterTextSplitter` | Hierarchical Chinese separators. |
+| `sentence` | LlamaIndex `SentenceSplitter` | Sentence-boundary-aware. |
+| `semantic` | LlamaIndex `SemanticSplitterNodeParser` | Embedding-based breakpoint detection. |
+| `multimodal` | `MultimodalChunker` + `MultimodalSplitter` | Image-text pair extraction. Returns `(parent, child)` tuple. VLM summarization. |
+
+### LangGraph Workflow
+
+```
+START → summarize → analyze_rewrite → route → [process_question x N] → aggregate → END
+```
+
+- **summarize**: Compresses conversation history (last 6 messages). Skips if < 4 messages.
+- **analyze_rewrite**: LLM-powered question decomposition with JSON output.
+- **route**: `Send()` dispatches to parallel ReAct agent subgraphs.
+- **process_question** (subgraph): ReAct loop with `knowledge_base_search` tool. Tool Artifact captures debug data.
+- **aggregate**: Single-answer passthrough; multi-answer LLM aggregation.
+
+### Debug Data (Tool Artifact)
+
+The retrieval tool uses `response_format="content_and_artifact"` to capture debug metadata. SSE events deliver chunks to the frontend: `{"event": "chunks", "data": [{"text", "score", "source_file"}]}`.
+
+## Data & Test Directory Organization
+
+### Ingestion Service Data Layout
+
+**`services/ingestion/data/`** — 实际的输入数据（gitignored）
+- `manual/` — 教务系统操作手册 PDF（4 个文件）
+  - 用途：多模态 RAG 的原始手册数据源
+  - 示例：4-1 郑州大学毕业论文系统指导老师操作手册.pdf (6.7MB)
+- `parsed/` — 解析后的中间数据
+  - 用途：存储 PDF → Markdown 转换后的结果
+- `policy/` — 政策类文档 PDF
+  - 用途：毕业设计相关的政策和规范文档
+
+**`services/ingestion/tests/datas/`** — Ingestion 单元测试数据
+- `cleaner_test_results/` — 文档清洗器测试输出
+  - 用途：验证 PolicyCleaner 的页眉页脚移除、TOC 清理等功能
+- `sentence_chunker_test_results/` — 句子切分器测试输出
+  - 用途：验证 SentenceSplitter 的层级切分和父子节点生成
+- **`multimodal_poc/`** — 多模态 POC 测试数据（规划中）
+  - 用途：POC-2 (PDF 图文提取) 的输出数据
+
+### Gateway Service Test Layout
+
+**`services/gateway/tests/`** — Gateway 端到端测试 ✅ 已设置
+- **`poc_multimodal/`** — 多模态 POC 测试套件 ✅
+  - `poc_test_dashscope_multimodal.py` — 测试 DashScope 多模态 API
+  - `poc_test_pdf_image_extraction.py` — 测试 PyMuPDF 图文对提取
+  - `poc_test_qdrant_multimodal.py` — 测试 Qdrant 多向量存储
+  - `POC_README.md` — 详细测试指南
+  - `QUICKSTART.md` — 5 分钟快速启动指南
+- **`datas/`** — Gateway 测试数据 ✅
+  - `test_images/` — 测试用的系统截图（输入数据）
+    - 用途：POC-1 (DashScope API) 的输入
+  - `extracted_images/` — PDF 提取的图片（输出数据）
+    - 用途：POC-2 (PDF 图文提取) 的输出验证
+  - `poc_results/` — POC 测试结果汇总（输出数据）
+    - 用途：存储 POC-1/2/3 的测试报告 JSON/TXT
+- `scripts/` — 其他测试辅助脚本（保留用于未来扩展）
+- `README.md` — 测试套件总体说明
+
+### Inference Service Test Layout
+
+**`services/inference/tests/datas/`** — Inference 测试数据（目前为空）
+- 用途：未来用于 Agent workflow 和多模态检索的测试数据
+
+### Directory Organization Principles
+
+1. **输入数据 vs 测试数据分离**：
+   - 实际输入数据 → `services/ingestion/data/`
+   - 测试和验证数据 → `services/*/tests/datas/`
+
+2. **POC 测试放置原则**：
+   - **Gateway** 负责端到端测试（用户视角）
+   - POC 测试模拟用户完整使用流程，应放在 `services/gateway/tests/poc_multimodal/`
+   - 输入数据可复用 `services/ingestion/data/manual/` 中的手册
+
+3. **测试数据命名规范**：
+   - 功能测试输出：`{feature}_test_results/`
+   - POC 测试数据：`poc_multimodal/`
+   - 避免与现有测试数据混淆，保持清晰隔离
+
+## Important Notes
+
+- Each service has its own numpy version: Ingestion (>=2.0), Inference (<2.0).
+- `ingestion_fingerprint` does NOT include sparse model info. Changing sparse model requires manual Qdrant collection deletion.
+- `ingestion_fingerprint` DOES include multimodal params when `enable_multimodal=True` — ensures separate collections.
+- VectorStoreManager supports dual-mode: `http://` URL (Docker Qdrant) or local path (dev fallback).
+- Runtime data lives in `data/` (gitignored): `vectordb/`, `metadata.db`, `mysql/`, `reports/`, `uploads/`.
+- MySQL stores parent nodes (full image bytes + metadata) for multimodal; Qdrant stores child nodes (text summaries) for retrieval.
+- MultimodalChunker returns `(parent_nodes, child_nodes)` tuple, unlike other chunkers that return `List[Node]`.
+- Role-based filtering: roles extracted from Chinese filenames at ingestion time, enforced at retrieval.
+- Auto-Merge currently has no effect (flat nodes, no `HierarchicalNodeParser`).
+- `HF_ENDPOINT=hf-mirror.com` for China-region model downloads.
+- All services initialized: run `docker compose up -d` or start services individually with `poetry run python -m app.main` in each service directory.
+- MySQL init script: `scripts/init_mysql.sql` (auto-executed by Docker Compose).
+
+## Agent Learning
+
+当用户完成一个工作后说**"总结经验"**或**"记录这次工作"**时，生成简洁但结构化的经验记录，保存到 `docs/agent-learning/cases/YYYY-MM-DD_工作名.md`。
+
+**关键原则**：
+- 问题要说明"影响"（对下游流程的具体影响）
+- 方案要列出编号的"核心规则"（可直接转换为代码逻辑）
+- 标准要用表格 + 说明列（解释指标含义和计算方式）
+- 适用要结构化描述文档特征 + 解释"为什么适用"
+- 代码要包含文件位置、关键类/方法、验证工具
+
+目的：为未来 Agent 化积累可直接应用的"学习材料"（问题识别、解决方案、评估标准）。

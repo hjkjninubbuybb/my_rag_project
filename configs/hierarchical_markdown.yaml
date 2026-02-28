@@ -1,0 +1,21 @@
+experiment:
+  id: sentence_test
+  description: Sentence Parent-Child Node Parsing (JSON Serialization Only)
+
+model:
+  llm_provider: dashscope
+  llm_model: qwen-plus
+  embedding_provider: dashscope
+  embedding_model: text-embedding-v4
+
+storage:
+  qdrant_url: http://localhost:6333
+  mysql_url: mysql+pymysql://rag_user:rag_password@localhost:3306/rag_db
+
+rag:
+  chunking_strategy: sentence
+  retrieval_top_k: 50
+  rerank_top_k: 5
+  enable_hybrid: true
+  enable_auto_merge: true
+  enable_rerank: true

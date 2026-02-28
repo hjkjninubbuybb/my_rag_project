@@ -46,3 +46,20 @@ rag:
   retrieval_top_k: 50
   # 重排序数量 (Rerank Top N)
   rerank_top_k: 5
+
+# ===== 新增段：RAGAS 评估配置 =====
+ragas:
+  # 是否启用 RAGAS 评估（默认启用）
+  enable_evaluation: true
+
+  # 评估指标列表
+  metrics:
+    - "context_precision"    # 检索精准度（文档相关性质量）
+    - "context_recall"       # 检索召回率（ground truth 覆盖度）
+    # 可选指标（需要生成答案，评估较慢）：
+    # - "faithfulness"       # 忠实度（答案是否基于上下文）
+    # - "answer_relevancy"   # 答案相关性（答案是否回答问题）
+
+  # LLM-as-judge 配置
+  llm_provider: "dashscope"
+  llm_model: "qwen-plus"
