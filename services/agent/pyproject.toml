@@ -2,6 +2,7 @@
 name = "rag-agent"
 version = "0.1.0"
 description = "RAG Agent Service — Pure LLM/VLM capabilities with LangGraph workflow"
+authors = ["RAG Team"]
 packages = [{include = "app"}]
 
 [tool.poetry.dependencies]

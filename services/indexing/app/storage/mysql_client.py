@@ -22,7 +22,7 @@ class ParentNode(Base):
     collection_name = Column(String(255), nullable=False, index=True)
     file_name = Column(String(255), nullable=False, index=True)
     text = Column(Text, nullable=False)  # Context text + base64 images
-    metadata = Column(JSON)  # {user_role, page, images: [...]}
+    node_metadata = Column("metadata", JSON)  # {user_role, page, images: [...]}
     created_at = Column(TIMESTAMP, default=datetime.utcnow)
     updated_at = Column(TIMESTAMP, default=datetime.utcnow, onupdate=datetime.utcnow)
 
@@ -92,7 +92,7 @@ class MySQLClient:
                     collection_name=node_data["collection_name"],
                     file_name=node_data["file_name"],
                     text=node_data["text"],
-                    metadata=node_data.get("metadata", {}),
+                    node_metadata=node_data.get("metadata", {}),
                 )
                 session.merge(parent_node)  # Insert or update
             session.commit()
@@ -122,7 +122,7 @@ class MySQLClient:
                     "collection_name": node.collection_name,
                     "file_name": node.file_name,
                     "text": node.text,
-                    "metadata": node.metadata,
+                    "metadata": node.node_metadata,
                 }
             return None
         finally:
@@ -146,7 +146,7 @@ class MySQLClient:
                     "collection_name": node.collection_name,
                     "file_name": node.file_name,
                     "text": node.text,
-                    "metadata": node.metadata,
+                    "metadata": node.node_metadata,
                 }
                 for node in nodes
             ]

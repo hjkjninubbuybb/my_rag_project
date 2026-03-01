@@ -47,47 +47,6 @@ services:
       timeout: 10s
       retries: 3
 
-  # 对象存储 - 存储原始 PDF、提取的图片
-  minio:
-    image: minio/minio:latest
-    container_name: rag_minio
-    ports:
-      - "9000:9000"  # API
-      - "9001:9001"  # Console
-    environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin
-    volumes:
-      - minio_data:/data
-    command: server /data --console-address ":9001"
-    restart: unless-stopped
-    networks:
-      - rag_network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  # MinIO 初始化 - 创建 buckets
-  minio-init:
-    image: minio/mc:latest
-    container_name: rag_minio_init
-    depends_on:
-      - minio
-    networks:
-      - rag_network
-    entrypoint: >
-      /bin/sh -c "
-      sleep 5;
-      mc alias set myminio http://minio:9000 minioadmin minioadmin;
-      mc mb myminio/raw-documents --ignore-existing;
-      mc mb myminio/extracted-images --ignore-existing;
-      mc anonymous set download myminio/raw-documents;
-      mc anonymous set download myminio/extracted-images;
-      echo 'MinIO buckets initialized successfully';
-      "
-
   # ══════════════════════════════════════════════════════════════
   # 微服务层 (Microservices Layer)
   # ══════════════════════════════════════════════════════════════
@@ -103,16 +62,11 @@ services:
     environment:
       - QDRANT_URL=http://qdrant:6333
       - MYSQL_URL=mysql+pymysql://rag_user:rag_password@mysql:3306/rag_db
-      - MINIO_ENDPOINT=minio:9000
-      - MINIO_ACCESS_KEY=minioadmin
-      - MINIO_SECRET_KEY=minioadmin
-      - MINIO_SECURE=false
       - DASHSCOPE_API_KEY=${DASHSCOPE_API_KEY}
       - AGENT_URL=http://agent:8002
     depends_on:
       - qdrant
       - mysql
-      - minio
     restart: unless-stopped
     networks:
       - rag_network
@@ -144,69 +98,31 @@ services:
       timeout: 10s
       retries: 3
 
-  # Orchestrator Service - 用户入口、流程编排
-  orchestrator:
-    build:
-      context: ./services/orchestrator
-      dockerfile: Dockerfile
-    container_name: rag_orchestrator
-    ports:
-      - "8000:8000"
-    environment:
-      - INDEXING_URL=http://indexing:8001
-      - AGENT_URL=http://agent:8002
-      - MINIO_ENDPOINT=minio:9000
-      - MINIO_ACCESS_KEY=minioadmin
-      - MINIO_SECRET_KEY=minioadmin
-      - MINIO_SECURE=false
-    depends_on:
-      - indexing
-      - agent
-      - minio
-    restart: unless-stopped
-    networks:
-      - rag_network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  # Testing Service - 集中测试管理
+  # Testing Service - 通过 docker compose exec 运行 pytest
   testing:
     build:
       context: ./services/testing
       dockerfile: Dockerfile
     container_name: rag_testing
-    ports:
-      - "8003:8003"
     environment:
       - MYSQL_URL=mysql+pymysql://rag_user:rag_password@mysql:3306/rag_db
-      - ORCHESTRATOR_URL=http://orchestrator:8000
       - INDEXING_URL=http://indexing:8001
       - AGENT_URL=http://agent:8002
     volumes:
-      - ./services/testing/app/data:/app/app/data
+      - ./services/testing/datas:/app/datas
+      - ./services/testing/results:/app/results
     depends_on:
       - mysql
-      - orchestrator
       - indexing
       - agent
     restart: unless-stopped
     networks:
       - rag_network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8003/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
 
 volumes:
   qdrant_data:
     driver: local
   mysql_data:
-    driver: local
-  minio_data:
     driver: local
 
 networks:

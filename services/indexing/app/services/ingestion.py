@@ -570,7 +570,7 @@ class IngestionService:
         file_name: str,
         config: ExperimentConfig,
     ) -> dict:
-        """Ingest document from bytes (MinIO integration).
+        """Ingest document from bytes.
 
         Args:
             file_data: File binary data

@@ -53,7 +53,11 @@ data/minio/
 .DS_Store
 Thumbs.db
 
-# --- Claude Code 内部文件 ---
+# --- 测试服务与计划 ---
+services/testing/
+plans/
+
+# --- Claude Code ---
 .claude/
 
 # --- Windows 误生成文件 ---

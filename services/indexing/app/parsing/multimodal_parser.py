@@ -3,6 +3,7 @@
 使用 PyMuPDF (fitz) 提取 PDF 中的图文对，建立文本和图像的对应关系。
 """
 
+import hashlib
 import io
 from typing import List, Dict, Any
 from pathlib import Path
@@ -20,6 +21,10 @@ from app.utils.logger import get_logger
 from app.core.types import ImageType
 
 logger = get_logger(__name__)
+
+# 小图过滤阈值（像素），低于此尺寸的图片视为图标/装饰元素
+MIN_IMAGE_WIDTH = 50
+MIN_IMAGE_HEIGHT = 50
 
 
 class MultimodalPDFParser:
@@ -92,44 +97,61 @@ class MultimodalPDFParser:
 
     def _extract_surrounding_text(
         self,
-        page_text: str,
+        page: "fitz.Page",
         image_bbox: tuple,
-        context_lines: int = 3
+        context_blocks: int = 3
     ) -> str:
-        """提取图片周围的文本作为上下文。
+        """基于 bbox 坐标提取图片上下方的文本块。
+
+        使用 PyMuPDF page.get_text("blocks") 获取带位置信息的文本块，
+        根据图片 bbox 的 y 坐标找到上方和下方最近的文本。
 
         Args:
-            page_text: 页面完整文本
+            page: PyMuPDF Page 对象
             image_bbox: 图片位置 (x0, y0, x1, y1)
-            context_lines: 提取前后各几行文本
+            context_blocks: 提取上下各几个文本块
 
         Returns:
-            周围文本（去重、清理后）
+            周围文本
         """
-        if not page_text or not image_bbox:
-            return ""
+        if not image_bbox:
+            # 无 bbox 时 fallback：取页面文本前 500 字符
+            fallback = page.get_text("text").strip()
+            return fallback[:500]
 
-        # 简单策略：取页面文本的前 N 行和后 N 行
-        # （更精确的方法需要 OCR 坐标，这里用简化版本）
-        lines = page_text.split("\n")
-        lines = [line.strip() for line in lines if line.strip()]
+        img_y0, img_y1 = image_bbox[1], image_bbox[3]
 
-        # 取前后各 context_lines 行
-        if len(lines) <= context_lines * 2:
-            surrounding = "\n".join(lines)
-        else:
-            # 取前 N 行和后 N 行
-            before = lines[:context_lines]
-            after = lines[-context_lines:]
-            surrounding = "\n".join(before + after)
+        # 获取文本块：(x0, y0, x1, y1, text, block_no, block_type)
+        blocks = page.get_text("blocks")
+        # block_type 0 = 文本块
+        text_blocks = [b for b in blocks if b[6] == 0]
 
-        # 清理：去除过长的行（可能是噪音）
-        cleaned_lines = []
-        for line in surrounding.split("\n"):
-            if len(line) < 200:  # 过长的行可能是解析错误
-                cleaned_lines.append(line)
+        above = []
+        below = []
 
-        return "\n".join(cleaned_lines[:context_lines * 2])  # 最多保留 2*N 行
+        for block in text_blocks:
+            block_y0, block_y1 = block[1], block[3]
+            block_text = block[4].strip()
+            if not block_text or len(block_text) > 500:
+                continue
+
+            if block_y1 <= img_y0:
+                # 文本块在图片上方，按底边 y 排序（越大越近）
+                above.append((block_y1, block_text))
+            elif block_y0 >= img_y1:
+                # 文本块在图片下方，按顶边 y 排序（越小越近）
+                below.append((block_y0, block_text))
+
+        # 取最近的 N 个上方块（按 y 降序 → 最近的在前）
+        above.sort(key=lambda x: x[0], reverse=True)
+        above_texts = [t for _, t in above[:context_blocks]]
+        above_texts.reverse()  # 恢复阅读顺序
+
+        # 取最近的 N 个下方块（按 y 升序 → 最近的在前）
+        below.sort(key=lambda x: x[0])
+        below_texts = [t for _, t in below[:context_blocks]]
+
+        return "\n".join(above_texts + below_texts)
 
     def parse(self, pdf_bytes: bytes, filename: str) -> List[Dict[str, Any]]:
         """解析 PDF，提取每页的文本和图片。
@@ -149,7 +171,10 @@ class MultimodalPDFParser:
                         "bbox": (x0, y0, x1, y1),  # 位置信息
                         "format": str,  # 图片格式（png/jpeg）
                         "width": int,
-                        "height": int
+                        "height": int,
+                        "hash": str,  # MD5 哈希
+                        "image_type": ImageType,
+                        "surrounding_text": str,
                     }
                 ],
                 "role": str  # 文档角色（从文件名提取）
@@ -161,6 +186,8 @@ class MultimodalPDFParser:
 
         doc = fitz.open(stream=pdf_bytes, filetype="pdf")
         results = []
+        seen_hashes: set = set()  # 图片去重
+        stats = {"skipped_small": 0, "skipped_dup": 0, "skipped_toc": 0}
 
         try:
             for page_num in range(len(doc)):
@@ -168,6 +195,12 @@ class MultimodalPDFParser:
 
                 # 提取文本
                 text = page.get_text("text")
+
+                # 跳过目录页（提前判断，避免无用图片提取）
+                if self._is_toc_page(text):
+                    stats["skipped_toc"] += 1
+                    logger.debug(f"跳过目录页: 第 {page_num + 1} 页")
+                    continue
 
                 # 提取图片
                 images = []
@@ -177,16 +210,24 @@ class MultimodalPDFParser:
                     xref = img_info[1][0]  # img_info is (index, img_data)
 
                     # 提取图片数据
-                    base_image = doc.extract_image(xref)
+                    try:
+                        base_image = doc.extract_image(xref)
+                    except Exception:
+                        logger.debug(f"无法提取图片 xref={xref} (第 {page_num + 1} 页)")
+                        continue
                     image_bytes = base_image["image"]
                     image_ext = base_image["ext"]
 
-                    # 获取图片位置（bbox）
-                    img_rects = page.get_image_rects(xref)
-                    bbox = None
-                    if img_rects:
-                        rect = img_rects[0]  # 取第一个位置
-                        bbox = (rect.x0, rect.y0, rect.x1, rect.y1)
+                    # 图片去重（MD5）
+                    image_hash = hashlib.md5(image_bytes).hexdigest()
+                    if image_hash in seen_hashes:
+                        stats["skipped_dup"] += 1
+                        logger.debug(
+                            f"跳过重复图片: hash={image_hash[:8]}... "
+                            f"(第 {page_num + 1} 页)"
+                        )
+                        continue
+                    seen_hashes.add(image_hash)
 
                     # 获取图片尺寸
                     try:
@@ -194,8 +235,23 @@ class MultimodalPDFParser:
                         img_pil = Image.open(io.BytesIO(image_bytes))
                         width, height = img_pil.size
                     except ImportError:
-                        # 如果没有 PIL，使用默认值
                         width, height = 0, 0
+
+                    # 小图过滤
+                    if width < MIN_IMAGE_WIDTH or height < MIN_IMAGE_HEIGHT:
+                        stats["skipped_small"] += 1
+                        logger.debug(
+                            f"跳过小图片: {width}x{height} "
+                            f"(第 {page_num + 1} 页)"
+                        )
+                        continue
+
+                    # 获取图片位置（bbox）
+                    img_rects = page.get_image_rects(xref)
+                    bbox = None
+                    if img_rects:
+                        rect = img_rects[0]
+                        bbox = (rect.x0, rect.y0, rect.x1, rect.y1)
 
                     # 构建图片信息字典
                     img_dict = {
@@ -204,22 +260,18 @@ class MultimodalPDFParser:
                         "format": image_ext,
                         "width": width,
                         "height": height,
+                        "hash": image_hash,
                     }
 
                     # 分类图片类型
                     image_type = self._classify_image_type(img_dict, text)
                     img_dict["image_type"] = image_type
 
-                    # 提取周围文本
-                    surrounding_text = self._extract_surrounding_text(text, bbox)
+                    # 提取周围文本（基于 bbox 坐标）
+                    surrounding_text = self._extract_surrounding_text(page, bbox)
                     img_dict["surrounding_text"] = surrounding_text
 
                     images.append(img_dict)
-
-                # 跳过目录页
-                if self._is_toc_page(text):
-                    logger.debug(f"跳过目录页: 第 {page_num + 1} 页")
-                    continue
 
                 results.append({
                     "page": page_num + 1,  # 页码从 1 开始
@@ -231,9 +283,12 @@ class MultimodalPDFParser:
         finally:
             doc.close()
 
+        total_images = sum(len(r["images"]) for r in results)
         logger.info(
-            f"解析完成: {len(results)} 页, "
-            f"总图片数: {sum(len(r['images']) for r in results)}"
+            f"解析完成: {len(results)} 页, {total_images} 张图片 "
+            f"(过滤: {stats['skipped_small']} 小图, "
+            f"{stats['skipped_dup']} 重复, "
+            f"{stats['skipped_toc']} 目录页)"
         )
 
         return results

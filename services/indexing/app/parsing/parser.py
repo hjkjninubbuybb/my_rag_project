@@ -53,6 +53,47 @@ class MinerUParser:
             "pages": pages,
         }
 
+    def parse_page_chunks(self, pdf_bytes: bytes, filename: str) -> list[dict]:
+        """PDF → 逐页 Markdown 列表。
+
+        Args:
+            pdf_bytes: PDF 文件二进制数据。
+            filename: 文件名。
+
+        Returns:
+            [{"page": 1, "text": "..."}, {"page": 2, "text": "..."}, ...]
+        """
+        if not self._ready:
+            raise RuntimeError("pymupdf4llm 未安装或未正确配置。")
+
+        import pymupdf4llm
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp_path = Path(tmpdir) / filename
+            tmp_path.write_bytes(pdf_bytes)
+
+            chunks = pymupdf4llm.to_markdown(
+                str(tmp_path),
+                page_chunks=True,
+                write_images=False,
+            )
+
+        if not isinstance(chunks, list):
+            raise ValueError(f"pymupdf4llm 返回了非预期格式: {type(chunks)}")
+
+        result = []
+        for idx, chunk in enumerate(chunks):
+            if not isinstance(chunk, dict):
+                continue
+            metadata = chunk.get("metadata", {})
+            page_num = metadata.get("page", idx + 1)
+            result.append({
+                "page": page_num,
+                "text": chunk.get("text", ""),
+            })
+
+        return result
+
     def _parse_with_pymupdf4llm(self, pdf_path: Path) -> tuple[str, int]:
         """使用 pymupdf4llm 解析 PDF"""
         import pymupdf4llm
@@ -71,3 +112,26 @@ class MinerUParser:
         doc.close()
 
         return md_content, pages
+
+
+def parse_document(file_path: str) -> list:
+    """解析文档文件，返回 LlamaIndex Document 列表。
+
+    包装 MinerUParser，供 ingest_from_bytes 调用。
+
+    Args:
+        file_path: PDF 文件路径。
+
+    Returns:
+        LlamaIndex Document 列表。
+    """
+    from llama_index.core import Document
+
+    path = Path(file_path)
+    parser = MinerUParser(output_dir=str(path.parent))
+    result = parser.parse(path.read_bytes(), path.name)
+
+    return [Document(
+        text=result["markdown"],
+        metadata={"file_name": path.name, "pages": result["pages"]},
+    )]

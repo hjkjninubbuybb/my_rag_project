@@ -7,7 +7,7 @@ readme = "README.md"
 packages = [{include = "app"}]
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = ">=3.10,<3.14"
 numpy = ">=2.0"
 fastapi = ">=0.100"
 uvicorn = {extras = ["standard"], version = ">=0.20"}
@@ -19,9 +19,11 @@ llama-index = ">=0.11"
 llama-index-core = ">=0.11"
 llama-index-embeddings-dashscope = ">=0.2"
 llama-index-llms-dashscope = ">=0.2"
+llama-index-vector-stores-qdrant = ">=0.3"
 
 # Document parsing
 pymupdf = ">=1.23"
+pymupdf4llm = ">=0.0.10"
 pypdf = ">=3.0"
 python-docx = ">=1.0"
 pillow = ">=10.0"
@@ -31,12 +33,18 @@ jieba = ">=0.42"
 
 # Storage
 qdrant-client = ">=1.7"
-minio = ">=7.2"
 pymysql = ">=1.1"
 sqlalchemy = ">=2.0"
 
+# LangChain (text splitters + core)
+langchain-text-splitters = ">=0.2"
+langchain-core = ">=0.2"
+
 # HTTP client (for calling Agent VLM API)
 httpx = ">=0.25"
+
+# Multipart form support
+python-multipart = ">=0.0.5"
 
 # Logging
 loguru = ">=0.7"

@@ -10,7 +10,6 @@ from app.config import settings
 from app.api import routes
 from app.storage.vectordb import VectorStoreManager
 from app.storage.mysql_client import MySQLClient
-from app.storage.minio_client import MinIOClient
 from app.utils.logger import logger
 
 # Import all components to trigger registration
@@ -37,19 +36,9 @@ async def lifespan(app: FastAPI):
     mysql_client = MySQLClient(connection_url=settings.mysql_url)
     logger.info(f"Connected to MySQL: {settings.mysql_host}:{settings.mysql_port}")
 
-    # MinIO
-    minio_client = MinIOClient(
-        endpoint=settings.minio_endpoint,
-        access_key=settings.minio_access_key,
-        secret_key=settings.minio_secret_key,
-        secure=settings.minio_secure,
-    )
-    logger.info(f"Connected to MinIO: {settings.minio_endpoint}")
-
     # Set clients in routes module
     routes.vector_store = vector_store
     routes.mysql_client = mysql_client
-    routes.minio_client = minio_client
 
     logger.info("Indexing Service started successfully")
 

@@ -1,7 +1,8 @@
 """API routes for Indexing Service."""
 
+import json
 from typing import List, Dict, Any, Optional
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, UploadFile, Form, status
 from pydantic import BaseModel, Field
 
 from app.config import settings
@@ -11,7 +12,6 @@ from app.services.retrieval import RetrievalService
 from app.services.multimodal_retrieval import MultimodalRetrievalService
 from app.storage.vectordb import VectorStoreManager
 from app.storage.mysql_client import MySQLClient
-from app.storage.minio_client import MinIOClient
 from app.utils.logger import logger
 
 router = APIRouter()
@@ -19,17 +19,9 @@ router = APIRouter()
 # Initialize clients (will be set in lifespan)
 vector_store: Optional[VectorStoreManager] = None
 mysql_client: Optional[MySQLClient] = None
-minio_client: Optional[MinIOClient] = None
 
 
 # ──────────────────── Request/Response Models ────────────────────
-
-
-class IndexRequest(BaseModel):
-    """Request model for indexing documents."""
-
-    minio_path: str = Field(..., description="MinIO object path (e.g., 'raw-documents/manual.pdf')")
-    config: Dict[str, Any] = Field(..., description="Experiment configuration")
 
 
 class IndexResponse(BaseModel):
@@ -80,15 +72,62 @@ class DocumentDeleteResponse(BaseModel):
     deleted_count: int
 
 
+class ConvertToMarkdownResponse(BaseModel):
+    """Response model for PDF to Markdown conversion."""
+
+    status: str
+    filename: str
+    pages: int
+    image_count: int
+    images: List[Dict[str, Any]] = Field(
+        default_factory=list,
+        description="Extracted images [{name, format, data_base64}]",
+    )
+    markdown_content: str = Field(
+        ..., description="Full generated Markdown content"
+    )
+
+
+class ExtractImageInfo(BaseModel):
+    """Extracted image info (without raw bytes)."""
+
+    bbox: Optional[List[float]] = None
+    format: str
+    width: int
+    height: int
+    hash: str
+    image_type: str
+    surrounding_text: str
+
+
+class ExtractPageResult(BaseModel):
+    """Extraction result for a single page."""
+
+    page: int
+    text: str
+    images: List[ExtractImageInfo]
+    role: str
+
+
+class ExtractResponse(BaseModel):
+    """Response model for document extraction."""
+
+    status: str
+    filename: str
+    total_pages: int
+    total_images: int
+    pages: List[ExtractPageResult]
+
+
 # ──────────────────── API Endpoints ────────────────────
 
 
 @router.post("/api/v1/index", response_model=IndexResponse)
-async def index_document(request: IndexRequest):
-    """Index a document from MinIO.
+async def index_document(file: UploadFile, config: str = Form("{}")):
+    """Index an uploaded document.
 
     Flow:
-    1. Download file from MinIO
+    1. Read uploaded file
     2. Parse document (PDF/DOCX)
     3. Clean text (PolicyCleaner/ManualCleaner)
     4. Chunk document
@@ -98,25 +137,25 @@ async def index_document(request: IndexRequest):
     """
     try:
         # Parse config
-        config = ExperimentConfig(**request.config)
+        config_dict = json.loads(config)
+        exp_config = ExperimentConfig(**config_dict)
 
-        # Download file from MinIO
-        bucket_name, object_name = request.minio_path.split("/", 1)
-        file_data = minio_client.download_file(bucket_name, object_name)
-        file_name = object_name.split("/")[-1]
+        # Read uploaded file
+        file_data = await file.read()
+        file_name = file.filename
 
         # Initialize ingestion service
         ingestion_service = IngestionService(
             vector_store=vector_store,
             mysql_client=mysql_client,
-            config=config,
+            config=exp_config,
         )
 
         # Ingest document
         result = await ingestion_service.ingest_from_bytes(
             file_data=file_data,
             file_name=file_name,
-            config=config,
+            config=exp_config,
         )
 
         return IndexResponse(
@@ -257,9 +296,6 @@ async def delete_collection(collection_name: str):
         for doc in documents:
             mysql_client.delete_document(collection_name, doc)
 
-        # Delete all parent nodes
-        # Note: This is a bulk operation, might need optimization
-
         return {
             "status": "success",
             "message": f"Collection {collection_name} deleted",
@@ -303,6 +339,102 @@ async def delete_document(collection_name: str, file_name: str):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to delete document: {str(e)}",
+        )
+
+
+@router.post("/api/v1/convert-to-markdown", response_model=ConvertToMarkdownResponse)
+async def convert_to_markdown(file: UploadFile):
+    """Convert a PDF to Markdown with extracted images.
+
+    Flow:
+    1. Read uploaded PDF
+    2. Extract images (MultimodalPDFParser)
+    3. Parse per-page Markdown (MinerUParser)
+    4. Inject image references by page number
+    5. Return markdown content + images as base64
+    """
+    try:
+        from app.services.pdf_to_markdown import PDFToMarkdownService
+
+        # Read uploaded file
+        file_data = await file.read()
+        file_name = file.filename
+
+        # Convert
+        service = PDFToMarkdownService()
+        result = service.convert(file_data, file_name)
+
+        return ConvertToMarkdownResponse(
+            status="success",
+            filename=result.filename,
+            pages=result.pages,
+            image_count=result.image_count,
+            images=result.images,
+            markdown_content=result.markdown_content,
+        )
+
+    except Exception as e:
+        logger.error(f"Failed to convert PDF to Markdown: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Conversion failed: {str(e)}",
+        )
+
+
+@router.post("/api/v1/extract", response_model=ExtractResponse)
+async def extract_document(file: UploadFile):
+    """Extract text and images from a PDF (parse only, no ingestion).
+
+    Uses MultimodalPDFParser to extract per-page text and image metadata.
+    Useful for inspecting extraction results before running full ingestion.
+    """
+    try:
+        from app.parsing.multimodal_parser import MultimodalPDFParser
+
+        # Read uploaded file
+        file_data = await file.read()
+        file_name = file.filename
+
+        # Parse
+        parser = MultimodalPDFParser()
+        results = parser.parse(file_data, file_name)
+
+        # Convert to response (strip raw image bytes)
+        pages = []
+        for page_data in results:
+            images = []
+            for img in page_data["images"]:
+                images.append(ExtractImageInfo(
+                    bbox=list(img["bbox"]) if img.get("bbox") else None,
+                    format=img["format"],
+                    width=img["width"],
+                    height=img["height"],
+                    hash=img.get("hash", ""),
+                    image_type=img["image_type"].value if hasattr(img["image_type"], "value") else str(img["image_type"]),
+                    surrounding_text=img.get("surrounding_text", ""),
+                ))
+            pages.append(ExtractPageResult(
+                page=page_data["page"],
+                text=page_data["text"],
+                images=images,
+                role=page_data["role"],
+            ))
+
+        total_images = sum(len(p.images) for p in pages)
+
+        return ExtractResponse(
+            status="success",
+            filename=file_name,
+            total_pages=len(pages),
+            total_images=total_images,
+            pages=pages,
+        )
+
+    except Exception as e:
+        logger.error(f"Failed to extract document: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Extraction failed: {str(e)}",
         )
 
 
